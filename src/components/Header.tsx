@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const navItems = ['Principal', 'Galería', 'Tienda', 'Órdenes', 'Envíos', 'Sistema'];
+  const navItems = ['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
 
   useEffect(() => {
     const handleScroll = () => {

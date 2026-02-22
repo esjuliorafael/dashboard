@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Edit2, Trash2, Search, Tag, Plus, X, Check, CornerDownRight, Layers } from 'lucide-react';
 
 interface SubcategoryItem {
@@ -194,7 +195,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
       )}
 
       {/* Subcategory Manager */}
-      {activeManagerCat && (
+      {activeManagerCat && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
           <div 
             className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
@@ -322,7 +323,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
             )}
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 };

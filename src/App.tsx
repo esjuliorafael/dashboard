@@ -302,7 +302,7 @@ function App() {
       case 'Ver Categorías': navigateToGallery('categories_list'); break;
       case 'Nuevo Producto': navigateToStore('create'); break;
       case 'Ver Productos': navigateToStore('list'); break;
-      case 'Envíos': navigateToSystem('shipping'); break;
+      case 'Configurar Envíos': navigateToSystem('shipping'); break;
       case 'Config': navigateToSystem('config'); break;
       case 'Usuarios': navigateToSystem('users'); break;
       case 'Ver Órdenes': 

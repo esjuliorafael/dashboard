@@ -201,7 +201,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
                   <div className="group">
                     <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Nombre Completo</label>
                     <div className="relative">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400">
+                      <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none">
                         <UserIcon size={18} />
                       </span>
                       <input 
@@ -218,7 +218,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
                   <div className="group">
                     <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Correo Electrónico</label>
                     <div className="relative">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400">
+                      <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none">
                         <Mail size={18} />
                       </span>
                       <input 
@@ -236,7 +236,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
                     <div className="group">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Nombre de Usuario</label>
                       <div className="relative">
-                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold text-sm">@</span>
+                        <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 font-bold text-sm pointer-events-none">@</span>
                         <input 
                           type="text"
                           required
@@ -251,7 +251,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
                     <div className="group">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Contraseña</label>
                       <div className="relative">
-                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400">
+                        <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none">
                           <Shield size={18} />
                         </span>
                         <input 
@@ -267,20 +267,22 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-6">
+                <div className="flex gap-4 pt-4">
                   <button 
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 bg-white px-6 py-4 rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-[0.98] border border-stone-200/50"
                   >
-                    <X size={18} className="text-stone-400" />
                     Cancelar
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 bg-white px-6 py-4 rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    disabled={!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim()))}
+                    className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2
+                      ${!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim())) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600'}
+                    `}
                   >
-                    {editingUser ? <Save size={18} className="text-stone-400" /> : <Check size={18} className="text-stone-400" />}
+                    {editingUser ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />}
                     {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                   </button>
                 </div>
@@ -307,17 +309,15 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast }
               <div className="grid grid-cols-2 gap-4 mt-10">
                 <button 
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  className="py-4 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
                 >
-                  <X size={18} className="text-stone-400" />
                   Cancelar
                 </button>
                 <button 
                   onClick={confirmDelete}
-                  className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  className="py-4 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
                 >
-                  <Trash2 size={18} className="text-stone-400" />
-                  Confirmar Eliminación
+                  Sí, Eliminar
                 </button>
               </div>
             </div>
