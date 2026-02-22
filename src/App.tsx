@@ -1,0 +1,686 @@
+
+import React, { useState, useCallback, useEffect } from 'react';
+import { Calendar, TrendingUp, DollarSign, Box, Clock, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus } from 'lucide-react';
+import { Header } from './components/Header';
+import { QuickActions } from './components/QuickActions';
+import { SalesChart } from './components/Widgets/SalesChart';
+import { OrderCard } from './components/Widgets/OrderCard';
+import { OrderStatusChart } from './components/Widgets/OrderStatusChart';
+import { LatestMedia } from './components/Widgets/LatestMedia';
+import { LatestProducts } from './components/Widgets/LatestProducts';
+import { CategoryWidget } from './components/Widgets/CategoryWidget';
+import { GalleryWidget } from './components/Widgets/GalleryWidget';
+import { BottomNav } from './components/BottomNav';
+import { GalleryView } from './components/Gallery/GalleryView';
+import { StoreView } from './components/Store/StoreView';
+import { OrdersView } from './components/Orders/OrdersView';
+import { OrderDetailView } from './components/Orders/OrderDetailView';
+import { ShippingView } from './components/System/Shipping/ShippingView';
+import { UsersView, UsersViewRef } from './components/System/Users/UsersView';
+import { Order, Media } from './types';
+
+// Mock Data
+const initialOrders: Order[] = [
+  { 
+    id: 'ORD-001', 
+    customer: 'Maria González', 
+    customerPhone: '555-0123',
+    customerState: 'Jalisco',
+    customerAddress: 'Av. Vallarta 1234, Col. Americana, Guadalajara',
+    items: [
+      { id: 'item-1', name: 'Gallo de Combate Kelso', type: 'ave', price: 800, quantity: 1 },
+      { id: 'item-2', name: 'Alimento Premium 20kg', type: 'articulo', price: 450, quantity: 1 }
+    ],
+    total: 1250, 
+    status: 'paid', 
+    date: '2023-10-25' 
+  },
+  { 
+    id: 'ORD-002', 
+    customer: 'Juan Perez', 
+    customerPhone: '555-4567',
+    customerState: 'Querétaro',
+    customerAddress: 'Calle Corregidora 56, Centro, Querétaro',
+    items: [
+      { id: 'item-3', name: 'Polla de Cría Hatch', type: 'ave', price: 850, quantity: 1 }
+    ],
+    total: 850, 
+    status: 'pending', 
+    date: '2023-10-25' 
+  },
+  { 
+    id: 'ORD-003', 
+    customer: 'Ana López', 
+    customerPhone: '555-8901',
+    customerState: 'Nuevo León',
+    customerAddress: 'Paseo de los Leones 789, Cumbres, Monterrey',
+    items: [
+      { id: 'item-4', name: 'Kit Básico Rancho', type: 'articulo', price: 3200, quantity: 1 }
+    ],
+    total: 3200, 
+    status: 'paid', 
+    date: '2023-10-24' 
+  },
+  { 
+    id: 'ORD-004', 
+    customer: 'Carlos Ruiz', 
+    customerPhone: '555-2345',
+    customerState: 'Veracruz',
+    customerAddress: 'Av. Independencia 432, Centro, Veracruz',
+    items: [
+      { id: 'item-5', name: 'Accesorio de Cuero', type: 'articulo', price: 450, quantity: 1 }
+    ],
+    total: 450, 
+    status: 'cancelled', 
+    date: '2023-10-23' 
+  },
+  { 
+    id: 'ORD-005', 
+    customer: 'Sofía Díaz', 
+    customerPhone: '555-6789',
+    customerState: 'Yucatán',
+    customerAddress: 'Calle 60 #456, Centro, Mérida',
+    items: [
+      { id: 'item-6', name: 'Set de Regalo', type: 'articulo', price: 1800, quantity: 1 }
+    ],
+    total: 1800, 
+    status: 'paid', 
+    date: '2023-10-23' 
+  },
+];
+
+// Reusable Components within App context
+const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
+  React.useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-24 md:bottom-10 right-4 left-4 md:left-auto md:right-10 z-[100] animate-in slide-in-from-right-10 fade-in duration-300">
+      <div className={`flex items-center gap-3 px-6 py-4 rounded-3xl shadow-2xl border ${type === 'success' ? 'bg-white border-green-100' : 'bg-white border-rose-100'}`}>
+        <div className={`p-2 rounded-full ${type === 'success' ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'}`}>
+          <CheckCircle2 size={20} />
+        </div>
+        <p className="text-sm font-bold text-stone-700">{message}</p>
+        <button onClick={onClose} className="ml-auto text-stone-300 hover:text-stone-500 transition-colors">
+          <X size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ConfirmModal = ({ 
+  isOpen, 
+  title, 
+  message, 
+  confirmLabel, 
+  onConfirm, 
+  onCancel, 
+  variant = 'danger' 
+}: { 
+  isOpen: boolean, 
+  title: string, 
+  message: string, 
+  confirmLabel: string, 
+  onConfirm: () => void, 
+  onCancel: () => void,
+  variant?: 'danger' | 'warning'
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-md" onClick={onCancel} />
+      <div className="relative w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-8 sm:p-10 text-center">
+          <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 ${variant === 'danger' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-500'}`}>
+            <AlertTriangle size={32} />
+          </div>
+          <h3 className="text-2xl font-black text-stone-800 tracking-tight mb-3">{title}</h3>
+          <p className="text-stone-500 text-sm font-medium leading-relaxed">{message}</p>
+          
+          <div className="grid grid-cols-2 gap-4 mt-10">
+            <button 
+              onClick={onCancel}
+              className="py-4 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+            >
+              Cancelar
+            </button>
+            <button 
+              onClick={onConfirm}
+              className={`py-4 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg
+                ${variant === 'danger' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20' : 'bg-brand-500 hover:bg-brand-600 shadow-brand-500/20'}
+              `}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function App() {
+  const [activeTab, setActiveTab] = useState<'Principal' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Principal');
+  const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
+  const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
+  const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
+  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users'>('menu');
+  const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
+  const shippingRef = React.useRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }>(null);
+  const usersRef = React.useRef<UsersViewRef>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Feedback States
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ 
+    isOpen: boolean, 
+    title: string, 
+    message: string, 
+    confirmLabel: string, 
+    onConfirm: () => void,
+    variant?: 'danger' | 'warning'
+  }>({ isOpen: false, title: '', message: '', confirmLabel: '', onConfirm: () => {} });
+
+  useEffect(() => {
+    if (confirmDialog.isOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [confirmDialog.isOpen]);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+  }, []);
+
+  const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+
+  const currentDate = new Date().toLocaleDateString('es-ES', { 
+    weekday: 'short', 
+    day: 'numeric', 
+    month: 'short' 
+  });
+
+  const isGalleryMode = activeTab === 'Galería';
+  const isStoreMode = activeTab === 'Tienda';
+  const isOrdersMode = activeTab === 'Órdenes';
+  const isSystemMode = activeTab === 'Sistema';
+  
+  const isCreatingMedia = isGalleryMode && galleryViewMode === 'create';
+  const isEditingMedia = isGalleryMode && galleryViewMode === 'media_edit';
+  const isCategoryForm = isGalleryMode && (galleryViewMode === 'category_create' || galleryViewMode === 'category_edit');
+  
+  const isCreatingProduct = isStoreMode && storeViewMode === 'create';
+  const isEditingProduct = isStoreMode && storeViewMode === 'edit';
+
+  const isFormMode = isCreatingMedia || isEditingMedia || isCategoryForm || isCreatingProduct || isEditingProduct;
+
+  const filteredOrders = orders.filter(order => 
+    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.customerState.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleMarkAsPaid = (orderId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: '¿Marcar como Pagada?',
+      message: `¿Confirmas que la orden ${orderId} ha sido pagada en su totalidad?`,
+      confirmLabel: 'Sí, Confirmar',
+      variant: 'warning',
+      onConfirm: () => {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'paid' } : o));
+        if (selectedOrder?.id === orderId) {
+          setSelectedOrder(prev => prev ? { ...prev, status: 'paid' } : null);
+        }
+        showToast(`Orden ${orderId} marcada como pagada`);
+        closeConfirm();
+      }
+    });
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: '¿Cancelar Orden?',
+      message: `¿Estás seguro de que deseas cancelar la orden ${orderId}? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Sí, Cancelar',
+      variant: 'danger',
+      onConfirm: () => {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+        if (selectedOrder?.id === orderId) {
+          setSelectedOrder(prev => prev ? { ...prev, status: 'cancelled' } : null);
+        }
+        showToast(`Orden ${orderId} cancelada`, 'error');
+        closeConfirm();
+      }
+    });
+  };
+
+  const handleViewOrderDetail = (order: Order) => {
+    setSelectedOrder(order);
+    setOrdersViewMode('detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper for navigation
+  const navigateToGallery = (mode: 'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit' = 'list') => {
+    setActiveTab('Galería');
+    setGalleryViewMode(mode);
+    setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToStore = (mode: 'list' | 'create' | 'edit' = 'list') => {
+    setActiveTab('Tienda');
+    setStoreViewMode(mode);
+    setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' = 'menu') => {
+    setActiveTab('Sistema');
+    setSystemViewMode(mode);
+    setShippingSubView('config');
+    setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleQuickAction = (actionLabel: string) => {
+    switch (actionLabel) {
+      case 'Nuevo Medio': navigateToGallery('create'); break;
+      case 'Ver Medios': navigateToGallery('list'); break;
+      case 'Nueva Categoría': navigateToGallery('category_create'); break;
+      case 'Ver Categorías': navigateToGallery('categories_list'); break;
+      case 'Nuevo Producto': navigateToStore('create'); break;
+      case 'Ver Productos': navigateToStore('list'); break;
+      case 'Envíos': navigateToSystem('shipping'); break;
+      case 'Config': navigateToSystem('config'); break;
+      case 'Usuarios': navigateToSystem('users'); break;
+      case 'Ver Órdenes': 
+      case 'Volver':
+        setActiveTab('Órdenes');
+        setOrdersViewMode('list');
+        setSearchQuery('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+    }
+  };
+
+  const handleCancelAction = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: '¿Descartar cambios?',
+      message: 'Si cancelas ahora, perderás toda la información ingresada en este formulario.',
+      confirmLabel: 'Sí, Descartar',
+      variant: 'warning',
+      onConfirm: () => {
+        if (isStoreMode) {
+          setStoreViewMode('list');
+        } else if (galleryViewMode === 'category_edit') {
+          setGalleryViewMode('categories_list');
+        } else {
+          setGalleryViewMode('list');
+        }
+        setSearchQuery('');
+        closeConfirm();
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24 md:pb-10 text-stone-900">
+      <Header activeTab={activeTab} setActiveTab={(tab) => {
+        setActiveTab(tab);
+        setSearchQuery('');
+        if (tab === 'Galería') setGalleryViewMode('list');
+        if (tab === 'Tienda') setStoreViewMode('list');
+        if (tab === 'Órdenes') setOrdersViewMode('list');
+      }} />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div className="animate-in fade-in slide-in-from-left-2 duration-500">
+            <h1 className="text-3xl sm:text-4xl font-bold text-stone-800 tracking-tight">
+              {isCreatingMedia ? (
+                <>Subir <span className="text-stone-600">Nuevo Medio</span></>
+              ) : isEditingMedia ? (
+                <>Editar <span className="text-stone-600">Medio</span></>
+              ) : isCreatingProduct ? (
+                <>Nuevo <span className="text-stone-600">Producto</span></>
+              ) : isEditingProduct ? (
+                <>Editar <span className="text-stone-600">Producto</span></>
+              ) : galleryViewMode === 'category_create' ? (
+                <>Nueva <span className="text-stone-600">Categoría</span></>
+              ) : galleryViewMode === 'category_edit' ? (
+                <>Editar <span className="text-stone-600">Categoría</span></>
+              ) : galleryViewMode === 'categories_list' ? (
+                <>Gestionar <span className="text-stone-600">Categorías</span></>
+              ) : isGalleryMode ? (
+                <>Panel de <span className="text-stone-600">Galería</span></>
+              ) : isStoreMode ? (
+                <>Gestión de <span className="text-stone-600">Tienda</span></>
+              ) : isOrdersMode ? (
+                ordersViewMode === 'detail' ? (
+                  <>Detalle de <span className="text-stone-600">Orden</span></>
+                ) : (
+                  <>Gestión de <span className="text-stone-600">Órdenes</span></>
+                )
+              ) : isSystemMode ? (
+                systemViewMode === 'shipping' ? (
+                  shippingSubView === 'zones' ? (
+                    <>Zonas por <span className="text-stone-600">Estado</span></>
+                  ) : (
+                    <>Gestión de <span className="text-stone-600">Envíos</span></>
+                  )
+                ) : systemViewMode === 'users' ? (
+                  <>Gestión de <span className="text-stone-600">Usuarios</span></>
+                ) : (
+                  <>Configuración del <span className="text-stone-600">Sistema</span></>
+                )
+              ) : (
+                <>¡Bienvenido de Nuevo, <span className="text-stone-600">Ricardo!</span></>
+              )}
+            </h1>
+            <p className="text-stone-500 mt-2 font-medium">
+              {isCreatingProduct || isEditingProduct 
+                ? 'Administra el inventario del rancho. Priorizamos la venta de aves de combate y cría.'
+                : isCreatingMedia || isEditingMedia
+                ? 'Completa los detalles para gestionar el contenido visual del catálogo del rancho.'
+                : galleryViewMode === 'category_create'
+                  ? 'Define una nueva agrupación para organizar los medios de la galería.'
+                  : galleryViewMode === 'categories_list'
+                    ? 'Revisa y organiza las agrupaciones de contenido de tu galería.'
+                    : isGalleryMode 
+                      ? 'Explora, organiza y gestiona todos los medios visuales del rancho.' 
+                      : isStoreMode
+                      ? 'Controla tu inventario de aves y artículos desde un solo lugar.'
+                      : isOrdersMode
+                      ? 'Administra las ventas, estados de pago y logística de envío.'
+                      : isSystemMode
+                      ? systemViewMode === 'shipping'
+                        ? shippingSubView === 'zones'
+                          ? 'Administra la clasificación territorial de envíos para la República Mexicana.'
+                          : 'Define las reglas financieras para el envío de artículos y aves.'
+                        : systemViewMode === 'users'
+                          ? 'Administra los accesos, roles y estados de los usuarios del sistema.'
+                          : 'Ajusta los parámetros globales, zonificación y usuarios del rancho.'
+                      : 'Gestiona el inventario, ventas y medios desde tu panel central.'}
+            </p>
+          </div>
+          
+          <div className="animate-in fade-in slide-in-from-right-2 duration-500">
+            {isFormMode ? (
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handleCancelAction}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <X size={18} className="text-stone-400" />
+                  Cancelar
+                </button>
+              </div>
+            ) : (isGalleryMode || isStoreMode || (isOrdersMode && ordersViewMode === 'list')) ? (
+              <div className="relative group w-full sm:w-auto min-w-[300px]">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
+                  <Search size={18} />
+                </div>
+                <input 
+                  type="text" 
+                  placeholder={isStoreMode ? "Busca productos, anillos..." : isOrdersMode ? "Busca por ID, cliente, estado..." : "Busca por título, categoría..."}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white pl-12 pr-6 py-3.5 rounded-full shadow-sm border border-stone-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm font-medium placeholder:text-stone-400"
+                />
+              </div>
+            ) : (isOrdersMode && ordersViewMode === 'detail' && selectedOrder) ? (
+              <div className="flex gap-3">
+                {(selectedOrder.status === 'pending' || selectedOrder.status === 'paid') && (
+                  <button 
+                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <X size={18} className="text-stone-400" />
+                    Cancelar Orden
+                  </button>
+                )}
+                {selectedOrder.status === 'pending' && (
+                  <button 
+                    onClick={() => handleMarkAsPaid(selectedOrder.id)}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Check size={18} className="text-stone-400" />
+                    Marcar como Pagada
+                  </button>
+                )}
+              </div>
+            ) : (isSystemMode && systemViewMode === 'users') ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => usersRef.current?.handleCreateUser()}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <UserPlus size={18} className="text-stone-400" />
+                  Nuevo Usuario
+                </button>
+              </div>
+            ) : (isSystemMode && systemViewMode === 'shipping') ? (
+              <div className="flex gap-3">
+                {shippingSubView === 'zones' ? (
+                  <>
+                    <button 
+                      onClick={() => setShippingSubView('config')}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <X size={18} className="text-stone-400" />
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => shippingRef.current?.handleSaveZones()}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <Save size={18} className="text-stone-400" />
+                      Guardar Cambios
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => shippingRef.current?.handleSaveConfig()}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Save size={18} className="text-stone-400" />
+                    Guardar Configuración
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="self-start sm:self-center bg-white px-5 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-medium text-sm whitespace-nowrap">
+                <Calendar size={16} className="text-brand-500" />
+                <span className="capitalize">{currentDate}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="w-full lg:w-20 flex-shrink-0 z-40">
+            <QuickActions 
+              context={activeTab} 
+              onAction={handleQuickAction} 
+              isDetail={isOrdersMode && ordersViewMode === 'detail'}
+            />
+          </div>
+
+          <div className="flex-1">
+            {isGalleryMode ? (
+              <div key={galleryViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <GalleryView 
+                  searchQuery={searchQuery} 
+                  viewMode={galleryViewMode} 
+                  onSetViewMode={setGalleryViewMode} 
+                  showToast={showToast}
+                  setConfirmDialog={setConfirmDialog}
+                />
+              </div>
+            ) : isStoreMode ? (
+               <div key={storeViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <StoreView 
+                  searchQuery={searchQuery} 
+                  viewMode={storeViewMode} 
+                  onSetViewMode={setStoreViewMode} 
+                  showToast={showToast}
+                  setConfirmDialog={setConfirmDialog}
+                />
+              </div>
+            ) : isOrdersMode ? (
+              ordersViewMode === 'detail' && selectedOrder ? (
+                <OrderDetailView 
+                  order={selectedOrder} 
+                  onBack={() => setOrdersViewMode('list')}
+                  onMarkAsPaid={handleMarkAsPaid}
+                  onCancelOrder={handleCancelOrder}
+                />
+              ) : (
+                <OrdersView 
+                  orders={filteredOrders}
+                  onViewDetail={handleViewOrderDetail}
+                  onMarkAsPaid={handleMarkAsPaid}
+                  onCancelOrder={handleCancelOrder}
+                />
+              )
+            ) : isSystemMode ? (
+              <div key={systemViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {systemViewMode === 'shipping' ? (
+                  <ShippingView 
+                    ref={shippingRef}
+                    subView={shippingSubView}
+                    setSubView={setShippingSubView}
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'users' ? (
+                  <UsersView ref={usersRef} showToast={showToast} />
+                ) : (
+                  <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-white/60 text-center">
+                    <Settings size={48} className="mx-auto text-stone-300 mb-4" />
+                    <h3 className="text-xl font-bold text-stone-800">Módulo en Desarrollo</h3>
+                    <p className="text-stone-500 mt-2">Esta sección del sistema estará disponible próximamente.</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="xl:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-white/60 min-h-[350px]">
+                    <SalesChart />
+                  </div>
+                  <div className="flex flex-col gap-6">
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-white/60 flex flex-col justify-center flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-stone-500 text-xs font-bold uppercase tracking-widest">Productos Activos</span>
+                          <h3 className="text-4xl font-black text-stone-800 mt-1">142</h3>
+                        </div>
+                        <div className="p-3.5 bg-brand-50 text-brand-600 rounded-2xl">
+                          <Box size={24} />
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-green-600 bg-green-50 w-fit px-2 py-1 rounded-lg">
+                        <TrendingUp size={12} />
+                        <span>+12 ESTE MES</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-white/60 flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="w-8 h-8 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                            <DollarSign size={16} />
+                          </div>
+                          <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">+4%</span>
+                        </div>
+                        <div>
+                          <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest leading-none">Pagadas</p>
+                          <p className="text-2xl font-black text-stone-800 mt-1.5">24</p>
+                          <div className="mt-2.5 h-1 w-full bg-stone-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-green-500 w-[75%]" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-white/60 flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                            <Clock size={16} />
+                          </div>
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">-2%</span>
+                        </div>
+                        <div>
+                          <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest leading-none">Pendientes</p>
+                          <p className="text-2xl font-black text-stone-800 mt-1.5">8</p>
+                          <div className="mt-2.5 h-1 w-full bg-stone-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 w-[25%]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="xl:col-span-2">
+                    <div className="flex items-center justify-between mb-4 px-1">
+                      <h3 className="text-xl font-bold text-stone-800">Últimas Órdenes</h3>
+                      <button className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors">
+                        Ver todas
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {orders.slice(0, 5).map((order) => (
+                        <OrderCard key={order.id} order={order} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="xl:col-span-1">
+                    <OrderStatusChart />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+                  <div className="xl:col-span-1 flex flex-col gap-4">
+                    <GalleryWidget onViewGallery={() => navigateToGallery('list')} />
+                    <CategoryWidget />
+                  </div>
+                  <div className="xl:col-span-1">
+                    <LatestMedia onViewGallery={() => navigateToGallery('list')} />
+                  </div>
+                  <div className="xl:col-span-1">
+                    <LatestProducts />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <BottomNav 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        tabs={['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema']}
+      />
+
+      {/* Global Feedback Overlays */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+      <ConfirmModal {...confirmDialog} onCancel={closeConfirm} />
+    </div>
+  );
+}
+
+export default App;
