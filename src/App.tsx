@@ -1,6 +1,5 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar, TrendingUp, DollarSign, Box, Clock, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus } from 'lucide-react';
+import { Calendar, TrendingUp, DollarSign, Box, Clock, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw } from 'lucide-react';
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
@@ -17,6 +16,8 @@ import { OrdersView } from './components/Orders/OrdersView';
 import { OrderDetailView } from './components/Orders/OrderDetailView';
 import { ShippingView } from './components/System/Shipping/ShippingView';
 import { UsersView, UsersViewRef } from './components/System/Users/UsersView';
+import { IdentityView, IdentityViewRef } from './components/System/Identity/IdentityView';
+import { PaymentMethodView, PaymentMethodViewRef } from './components/System/Payment/PaymentMethodView';
 import { Order, Media } from './types';
 
 // Mock Data
@@ -167,10 +168,19 @@ function App() {
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
-  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users'>('menu');
+  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment'>('menu');
+  
+  // View specific states
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
+  const [identityStatus, setIdentityStatus] = useState<'empty' | 'preview' | 'editing'>('preview');
+  const [hasTempLogo, setHasTempLogo] = useState(false);
+  
+  // Refs
   const shippingRef = React.useRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }>(null);
   const usersRef = React.useRef<UsersViewRef>(null);
+  const identityRef = React.useRef<IdentityViewRef>(null);
+  const paymentRef = React.useRef<PaymentMethodViewRef>(null);
+  
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [searchQuery, setSearchQuery] = useState('');
@@ -286,7 +296,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' = 'menu') => {
+  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' = 'menu') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
     setShippingSubView('config');
@@ -305,6 +315,9 @@ function App() {
       case 'Configurar Envíos': navigateToSystem('shipping'); break;
       case 'Config': navigateToSystem('config'); break;
       case 'Usuarios': navigateToSystem('users'); break;
+      case 'Identidad': 
+      case 'Añadir Logo': navigateToSystem('identity'); break;
+      case 'Método de Pago': navigateToSystem('payment'); break;
       case 'Ver Órdenes': 
       case 'Volver':
         setActiveTab('Órdenes');
@@ -384,6 +397,10 @@ function App() {
                   )
                 ) : systemViewMode === 'users' ? (
                   <>Gestión de <span className="text-stone-600">Usuarios</span></>
+                ) : systemViewMode === 'identity' ? (
+                  <>Identidad del <span className="text-stone-600">Sistema</span></>
+                ) : systemViewMode === 'payment' ? (
+                  <>Método de <span className="text-stone-600">Pago</span></>
                 ) : (
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
@@ -413,6 +430,10 @@ function App() {
                           : 'Define las reglas financieras para el envío de artículos y aves.'
                         : systemViewMode === 'users'
                           ? 'Administra los accesos, roles y estados de los usuarios del sistema.'
+                          : systemViewMode === 'identity'
+                            ? 'Administra el logo global utilizado en el panel y la tienda.'
+                          : systemViewMode === 'payment'
+                            ? 'Configura la cuenta bancaria donde recibirás los pagos de tus clientes.'
                           : 'Ajusta los parámetros globales, zonificación y usuarios del rancho.'
                       : 'Gestiona el inventario, ventas y medios desde tu panel central.'}
             </p>
@@ -502,6 +523,56 @@ function App() {
                   </button>
                 )}
               </div>
+            ) : (isSystemMode && systemViewMode === 'payment') ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => paymentRef.current?.handleSave()}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <Save size={18} className="text-stone-400" />
+                  Guardar Configuración
+                </button>
+              </div>
+            ) : (isSystemMode && systemViewMode === 'identity') ? (
+              <div className="flex gap-3">
+                {identityStatus === 'empty' && (
+                  <button 
+                    onClick={() => setIdentityStatus('editing')}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Upload size={18} className="text-stone-400" />
+                    Subir logo
+                  </button>
+                )}
+                {identityStatus === 'preview' && (
+                  <button 
+                    onClick={() => setIdentityStatus('editing')}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <RefreshCw size={18} className="text-stone-400" />
+                    Reemplazar logo
+                  </button>
+                )}
+                {identityStatus === 'editing' && (
+                  <>
+                    <button 
+                      onClick={() => identityRef.current?.handleCancel()}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <X size={18} className="text-stone-400" />
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => identityRef.current?.handleSave()}
+                      disabled={!hasTempLogo}
+                      className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!hasTempLogo ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}
+                    >
+                      <Save size={18} className="text-stone-400" />
+                      Guardar Nuevo Logo
+                    </button>
+                  </>
+                )}
+              </div>
             ) : (
               <div className="self-start sm:self-center bg-white px-5 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-medium text-sm whitespace-nowrap">
                 <Calendar size={16} className="text-brand-500" />
@@ -568,6 +639,19 @@ function App() {
                   />
                 ) : systemViewMode === 'users' ? (
                   <UsersView ref={usersRef} showToast={showToast} />
+                ) : systemViewMode === 'identity' ? (
+                  <IdentityView 
+                    ref={identityRef} 
+                    status={identityStatus} 
+                    setStatus={setIdentityStatus} 
+                    onTempLogoChange={setHasTempLogo} 
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'payment' ? (
+                  <PaymentMethodView 
+                    ref={paymentRef} 
+                    showToast={showToast} 
+                  />
                 ) : (
                   <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-white/60 text-center">
                     <Settings size={48} className="mx-auto text-stone-300 mb-4" />
