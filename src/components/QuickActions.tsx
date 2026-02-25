@@ -3,7 +3,7 @@ import {
   Image, PlusCircle, Layers, ShoppingBag, 
   PackagePlus, ListOrdered, ClipboardList, PenTool, 
   Settings, Truck, Users, LayoutGrid, Tags, FolderPlus,
-  ArrowLeft, CreditCard // Añadimos CreditCard aquí
+  ArrowLeft, CreditCard, MessageCircle // Añadimos MessageCircle aquí
 } from 'lucide-react';
 import { QuickActionGroup } from '../types';
 
@@ -45,7 +45,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
       group: 'Sistema',
       items: [
         { icon: <PenTool size={20} />, label: 'Añadir Logo' },
-        { icon: <CreditCard size={20} />, label: 'Método de Pago' }, // <--- Aquí agregamos el nuevo botón
+        { icon: <CreditCard size={20} />, label: 'Método de Pago' },
+        { icon: <MessageCircle size={20} />, label: 'WhatsApp' }, // Nueva acción añadida
         { icon: <Settings size={20} />, label: 'Config' },
         { icon: <Truck size={20} />, label: 'Configurar Envíos' },
         { icon: <Users size={20} />, label: 'Usuarios' },

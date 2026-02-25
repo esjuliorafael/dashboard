@@ -18,6 +18,7 @@ import { ShippingView } from './components/System/Shipping/ShippingView';
 import { UsersView, UsersViewRef } from './components/System/Users/UsersView';
 import { IdentityView, IdentityViewRef } from './components/System/Identity/IdentityView';
 import { PaymentMethodView, PaymentMethodViewRef } from './components/System/Payment/PaymentMethodView';
+import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/WhatsAppView';
 import { Order, Media } from './types';
 
 // Mock Data
@@ -168,10 +169,12 @@ function App() {
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
-  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment'>('menu');
+  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp'>('menu');
   
   // View specific states
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
+  const [paymentSubView, setPaymentSubView] = useState<'config' | 'channels'>('config'); 
+  const [whatsappSubView, setWhatsappSubView] = useState<'config' | 'channels'>('config');
   const [identityStatus, setIdentityStatus] = useState<'empty' | 'preview' | 'editing'>('preview');
   const [hasTempLogo, setHasTempLogo] = useState(false);
   
@@ -180,6 +183,7 @@ function App() {
   const usersRef = React.useRef<UsersViewRef>(null);
   const identityRef = React.useRef<IdentityViewRef>(null);
   const paymentRef = React.useRef<PaymentMethodViewRef>(null);
+  const whatsappRef = React.useRef<WhatsAppViewRef>(null);
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -281,7 +285,6 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Helper for navigation
   const navigateToGallery = (mode: 'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit' = 'list') => {
     setActiveTab('Galería');
     setGalleryViewMode(mode);
@@ -296,10 +299,12 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' = 'menu') => {
+  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' = 'menu') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
     setShippingSubView('config');
+    setPaymentSubView('config'); 
+    setWhatsappSubView('config');
     setSearchQuery('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -318,6 +323,7 @@ function App() {
       case 'Identidad': 
       case 'Añadir Logo': navigateToSystem('identity'); break;
       case 'Método de Pago': navigateToSystem('payment'); break;
+      case 'WhatsApp': navigateToSystem('whatsapp'); break;
       case 'Ver Órdenes': 
       case 'Volver':
         setActiveTab('Órdenes');
@@ -400,7 +406,17 @@ function App() {
                 ) : systemViewMode === 'identity' ? (
                   <>Identidad del <span className="text-stone-600">Sistema</span></>
                 ) : systemViewMode === 'payment' ? (
-                  <>Método de <span className="text-stone-600">Pago</span></>
+                  paymentSubView === 'channels' ? (
+                    <>Canales de <span className="text-stone-600">Venta</span></>
+                  ) : (
+                    <>Método de <span className="text-stone-600">Pago</span></>
+                  )
+                ) : systemViewMode === 'whatsapp' ? (
+                  whatsappSubView === 'channels' ? (
+                    <>Mensajería por <span className="text-stone-600">Canal</span></>
+                  ) : (
+                    <>Integración <span className="text-stone-600">WhatsApp</span></>
+                  )
                 ) : (
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
@@ -433,7 +449,13 @@ function App() {
                           : systemViewMode === 'identity'
                             ? 'Administra el logo global utilizado en el panel y la tienda.'
                           : systemViewMode === 'payment'
-                            ? 'Configura la cuenta bancaria donde recibirás los pagos de tus clientes.'
+                            ? paymentSubView === 'channels'
+                                ? 'Configura la información de contacto y cobro específica para cada propósito.'
+                                : 'Configura la cuenta bancaria donde recibirás los pagos de tus clientes.'
+                          : systemViewMode === 'whatsapp'
+                            ? whatsappSubView === 'channels'
+                                ? 'Configura números y plantillas específicas para cada departamento.'
+                                : 'Ajusta el número y mensaje principal de confirmación de órdenes.'
                           : 'Ajusta los parámetros globales, zonificación y usuarios del rancho.'
                       : 'Gestiona el inventario, ventas y medios desde tu panel central.'}
             </p>
@@ -525,13 +547,61 @@ function App() {
               </div>
             ) : (isSystemMode && systemViewMode === 'payment') ? (
               <div className="flex gap-3">
-                <button 
-                  onClick={() => paymentRef.current?.handleSave()}
-                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
-                >
-                  <Save size={18} className="text-stone-400" />
-                  Guardar Configuración
-                </button>
+                {paymentSubView === 'channels' ? (
+                  <>
+                    <button 
+                      onClick={() => setPaymentSubView('config')}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <X size={18} className="text-stone-400" />
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => paymentRef.current?.handleSaveChannels()}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <Save size={18} className="text-stone-400" />
+                      Guardar Canales
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => paymentRef.current?.handleSaveConfig()}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Save size={18} className="text-stone-400" />
+                    Guardar Configuración
+                  </button>
+                )}
+              </div>
+            ) : (isSystemMode && systemViewMode === 'whatsapp') ? (
+              <div className="flex gap-3">
+                {whatsappSubView === 'channels' ? (
+                  <>
+                    <button 
+                      onClick={() => setWhatsappSubView('config')}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <X size={18} className="text-stone-400" />
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => whatsappRef.current?.handleSaveChannels()}
+                      className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    >
+                      <Save size={18} className="text-stone-400" />
+                      Guardar Canales
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => whatsappRef.current?.handleSaveConfig()}
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Save size={18} className="text-stone-400" />
+                    Guardar Configuración
+                  </button>
+                )}
               </div>
             ) : (isSystemMode && systemViewMode === 'identity') ? (
               <div className="flex gap-3">
@@ -650,6 +720,15 @@ function App() {
                 ) : systemViewMode === 'payment' ? (
                   <PaymentMethodView 
                     ref={paymentRef} 
+                    subView={paymentSubView}
+                    setSubView={setPaymentSubView}
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'whatsapp' ? (
+                  <WhatsAppView 
+                    ref={whatsappRef} 
+                    subView={whatsappSubView}
+                    setSubView={setWhatsappSubView}
                     showToast={showToast} 
                   />
                 ) : (
