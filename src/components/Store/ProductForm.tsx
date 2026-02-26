@@ -33,7 +33,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
 
   const isFormValid = !!coverUrl && !!name && !!price && (productType === 'ave' ? !!ringNumber : !!stock);
 
-  // Lógica de elevación de estado (comunicación con App.tsx)
   useEffect(() => {
     onValidationChange?.(isFormValid);
   }, [isFormValid, onValidationChange]);
@@ -84,8 +83,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
           `}
         >
           {!coverUrl ? (
-            <div className="flex flex-col items-center p-10 text-center">
-              <div className="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mb-6 shadow-sm">
+            // Agregamos la clase 'group' aquí
+            <div className="flex flex-col items-center p-10 text-center group">
+              {/* Agregamos las clases de animación (group-hover:scale-110 transition-transform duration-300) aquí */}
+              <div className="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <ImageIcon size={32} />
               </div>
               <h3 className="text-xl font-black text-stone-800 tracking-tight">Foto de Portada</h3>
@@ -203,7 +204,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full bg-stone-50 border border-stone-100 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   />
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-500" size={18} />
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-500">
+                    <DollarSign size={18} />
+                  </div>
                 </div>
               </div>
 
@@ -249,7 +252,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                       <option value="polla">Polla</option>
                       <option value="pollo">Pollo</option>
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
+                      <ChevronDown size={18} />
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -263,7 +268,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                       <option value="combate">Combate</option>
                       <option value="cria">Cría</option>
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
+                      <ChevronDown size={18} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -281,7 +288,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                   <option value="reserved">Reservado</option>
                   <option value="sold">Vendido</option>
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
+                  <ChevronDown size={18} />
+                </div>
               </div>
             </div>
 
@@ -296,7 +305,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               />
             </div>
 
-            {/* Botón Oculto */}
             <button type="submit" className="hidden" disabled={!isFormValid || isSubmitting} />
 
           </div>

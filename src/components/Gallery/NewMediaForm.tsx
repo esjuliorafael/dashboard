@@ -43,7 +43,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
 
   const isFormValid = !!previewUrl && !!title && !!category && isUploadComplete;
 
-  // Lógica de elevación de estado (comunicación con App.tsx)
   useEffect(() => {
     onValidationChange?.(isFormValid);
   }, [isFormValid, onValidationChange]);
@@ -124,7 +123,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
   return (
     <form id="media-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
       
-      {/* Upload Zone & Preview */}
       <div className="flex-1">
         <div 
           onDragOver={(e) => e.preventDefault()}
@@ -152,7 +150,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 <video src={previewUrl} className="w-full h-full object-cover" controls={!isUploading} />
               )}
               
-              {/* Progress Overlay */}
               <div className={`absolute inset-0 bg-black/40 transition-opacity flex flex-col items-end justify-end ${isUploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                 {isUploading ? (
                   <div className="w-full p-8 space-y-3">
@@ -166,7 +163,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    {/* Asegurar que type="button" para no disparar el form */}
                     <button 
                       type="button"
                       onClick={(e) => { e.stopPropagation(); clearFile(); }}
@@ -178,7 +174,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 )}
               </div>
 
-              {/* Status Tags */}
               {!isUploading && (
                 <div className="absolute top-6 left-6 flex items-center gap-2">
                   <div className="px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-2">
@@ -199,7 +194,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
         </div>
       </div>
 
-      {/* Form Details */}
       <div className="w-full lg:w-[420px] flex flex-col gap-6">
         <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-white/60 space-y-6">
           
@@ -216,51 +210,51 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Categoría Principal *</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Categoría Principal *</label>
+            <div className="relative">
+              <select 
+                required
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setSubCategory('');
+                }}
+                className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+              >
+                <option value="" disabled>Selecciona categoría</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              {/* CORRECCIÓN: inset-y-0 y flex items-center */}
+              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
+                <ChevronDown size={18} />
+              </div>
+            </div>
+          </div>
+
+          {category && subCategories.length > 0 && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Subcategoría (Opcional)</label>
               <div className="relative">
                 <select 
-                  required
-                  value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    setSubCategory('');
-                  }}
+                  value={subCategory}
+                  onChange={(e) => setSubCategory(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                 >
-                  <option value="" disabled>Selecciona categoría</option>
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  <option value="">Selecciona subcategoría</option>
+                  {subCategories.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                  <ChevronDown size={18} />
+                {/* CORRECCIÓN: inset-y-0 y flex items-center */}
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
+                  <FileType size={18} />
                 </div>
               </div>
             </div>
-
-            {category && subCategories.length > 0 && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Subcategoría (Opcional)</label>
-                <div className="relative">
-                  <select 
-                    value={subCategory}
-                    onChange={(e) => setSubCategory(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                  >
-                    <option value="">Selecciona subcategoría</option>
-                    {subCategories.map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                    <FileType size={18} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Ubicación (Opcional)</label>
@@ -272,7 +266,10 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full bg-stone-50 border border-stone-100 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               />
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400" size={18} />
+              {/* CORRECCIÓN: inset-y-0 y flex items-center */}
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-400">
+                <MapPin size={18} />
+              </div>
             </div>
           </div>
 
@@ -287,7 +284,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
             />
           </div>
 
-          {/* Botón Oculto */}
           <button type="submit" className="hidden" disabled={!isFormValid || isUploading} />
         </div>
       </div>
