@@ -1,36 +1,46 @@
 import React, { useState, useRef, useEffect } from 'react';
-// Added Box to the imported icons from lucide-react
-import { Upload, X, Tag, DollarSign, Info, Save, ChevronDown, CheckCircle2, Image as ImageIcon, Trash2, Package, Search, Box } from 'lucide-react';
+import { Upload, X, Tag, DollarSign, Info, ChevronDown, CheckCircle2, Image as ImageIcon, Trash2, Package, Search, Box } from 'lucide-react';
 import { Product } from '../../types';
 
 interface ProductFormProps {
   initialData?: Product;
   onCancel: () => void;
   onSave: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel, onSave }) => {
+export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel, onSave, onValidationChange }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [productType, setProductType] = useState<'ave' | 'articulo'>(initialData?.type || 'ave');
   const [name, setName] = useState(initialData?.name || '');
   const [price, setPrice] = useState(initialData?.price.toString() || '');
   const [status, setStatus] = useState(initialData?.status || 'available');
   const [description, setDescription] = useState(initialData?.description || '');
   
-  // Ave specific
   const [ringNumber, setRingNumber] = useState(initialData?.ringNumber || '');
   const [age, setAge] = useState(initialData?.age || 'pollo');
   const [purpose, setPurpose] = useState(initialData?.purpose || 'combate');
   
-  // Articulo specific
   const [stock, setStock] = useState(initialData?.stock?.toString() || '');
 
-  // Media states
   const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [galleryUrls, setGalleryUrls] = useState<string[]>(initialData?.gallery || []);
   const [isUploading, setIsUploading] = useState(false);
   
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const isFormValid = !!coverUrl && !!name && !!price && (productType === 'ave' ? !!ringNumber : !!stock);
+
+  // Lógica de elevación de estado (comunicación con App.tsx)
+  useEffect(() => {
+    onValidationChange?.(isFormValid);
+  }, [isFormValid, onValidationChange]);
+
+  useEffect(() => {
+    return () => onValidationChange?.(false);
+  }, [onValidationChange]);
 
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,7 +53,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Explicitly type file as File to avoid 'unknown' type error during URL.createObjectURL call
       const newUrls = Array.from(files).map((file: File) => URL.createObjectURL(file));
       setGalleryUrls(prev => [...prev, ...newUrls]);
     }
@@ -53,9 +62,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
     setGalleryUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  const isFormValid = !!coverUrl && !!name && !!price && (productType === 'ave' ? !!ringNumber : !!stock);
-
-  const handleFinalSave = () => {
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!isFormValid) return;
     setIsSubmitting(true);
     setTimeout(() => {
@@ -64,10 +72,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
     }, 1200);
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   return (
-    <div className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
+    <form id="product-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
       
       {/* Left Column: Cover & Gallery */}
       <div className="flex-1 space-y-6">
@@ -90,6 +96,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               <img src={coverUrl} className="w-full h-full object-cover" alt="Portada" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <button 
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); setCoverUrl(null); }}
                   className="bg-white/20 backdrop-blur-xl p-4 rounded-full text-white border border-white/30 hover:bg-rose-500/40 transition-all active:scale-90"
                 >
@@ -109,6 +116,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                 <h4 className="text-lg font-black text-stone-800 tracking-tight">Galería Adicional</h4>
              </div>
              <button 
+               type="button"
                onClick={() => galleryInputRef.current?.click()}
                className="p-3 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-2xl transition-all active:scale-90"
              >
@@ -122,6 +130,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-stone-100 shadow-sm">
                 <img src={url} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
                 <button 
+                  type="button"
                   onClick={() => removeGalleryImage(idx)}
                   className="absolute top-1 right-1 p-1.5 bg-rose-500/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all active:scale-90 backdrop-blur-sm"
                 >
@@ -147,6 +156,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
             <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Tipo de Producto</label>
             <div className="grid grid-cols-2 gap-3">
                <button 
+                 type="button"
                  onClick={() => setProductType('ave')}
                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 transition-all font-black text-xs uppercase tracking-widest
                     ${productType === 'ave' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}
@@ -156,6 +166,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                  Ave
                </button>
                <button 
+                 type="button"
                  onClick={() => setProductType('articulo')}
                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 transition-all font-black text-xs uppercase tracking-widest
                     ${productType === 'articulo' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}
@@ -172,6 +183,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Nombre del Producto *</label>
               <input 
                 type="text" 
+                required
                 placeholder={productType === 'ave' ? "Ej. Semental Colorado..." : "Ej. Sombrero de Gala..."}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -185,6 +197,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                 <div className="relative">
                   <input 
                     type="number" 
+                    required
                     placeholder="0.00"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
@@ -199,6 +212,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                   <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">No. Anillo *</label>
                   <input 
                     type="text" 
+                    required
                     placeholder="Ej. AB-123"
                     value={ringNumber}
                     onChange={(e) => setRingNumber(e.target.value)}
@@ -210,6 +224,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                   <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Stock *</label>
                   <input 
                     type="number" 
+                    required
                     placeholder="Cantidad"
                     value={stock}
                     onChange={(e) => setStock(e.target.value)}
@@ -281,27 +296,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               />
             </div>
 
-            <button 
-              onClick={handleFinalSave}
-              disabled={!isFormValid || isSubmitting}
-              className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg
-                ${!isFormValid || isSubmitting 
-                  ? 'bg-stone-100 text-stone-300 cursor-not-allowed' 
-                  : 'bg-brand-500 text-white hover:bg-brand-600 shadow-brand-500/20'}
-              `}
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Save size={18} />
-                  {initialData ? 'Guardar Cambios' : 'Crear Producto'}
-                </>
-              )}
-            </button>
+            {/* Botón Oculto */}
+            <button type="submit" className="hidden" disabled={!isFormValid || isSubmitting} />
+
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 };

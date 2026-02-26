@@ -1,12 +1,12 @@
-
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Upload, X, MapPin, ImageIcon, Film, FileType, ChevronDown, CheckCircle2, Save } from 'lucide-react';
+import { Upload, X, MapPin, ImageIcon, Film, FileType, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { Media } from '../../types';
 
 interface NewMediaFormProps {
   initialData?: Media;
   onCancel: () => void;
   onSave: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 const CATEGORY_MAP: Record<string, string[]> = {
@@ -22,7 +22,7 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 const CATEGORIES = Object.keys(CATEGORY_MAP);
 
-export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCancel, onSave }) => {
+export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCancel, onSave, onValidationChange }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.url || null);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(initialData?.type || null);
@@ -41,11 +41,20 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
     return category ? CATEGORY_MAP[category] || [] : [];
   }, [category]);
 
+  const isFormValid = !!previewUrl && !!title && !!category && isUploadComplete;
+
+  // Lógica de elevación de estado (comunicación con App.tsx)
+  useEffect(() => {
+    onValidationChange?.(isFormValid);
+  }, [isFormValid, onValidationChange]);
+
+  useEffect(() => {
+    return () => onValidationChange?.(false);
+  }, [onValidationChange]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      processFile(selectedFile);
-    }
+    if (selectedFile) processFile(selectedFile);
   };
 
   const simulateUpload = () => {
@@ -73,13 +82,9 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
 
-    if (file.type.startsWith('image/')) {
-      setMediaType('image');
-    } else if (file.type.startsWith('video/')) {
-      setMediaType('video');
-    } else {
-      setMediaType(null);
-    }
+    if (file.type.startsWith('image/')) setMediaType('image');
+    else if (file.type.startsWith('video/')) setMediaType('video');
+    else setMediaType(null);
 
     simulateUpload();
   };
@@ -87,9 +92,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile) {
-      processFile(droppedFile);
-    }
+    if (droppedFile) processFile(droppedFile);
   };
 
   const clearFile = () => {
@@ -102,12 +105,10 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
     setIsUploadComplete(false);
   };
 
-  const isFormValid = !!previewUrl && !!title && !!category && isUploadComplete;
-
-  const handleFinalSave = () => {
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!isFormValid) return;
     setIsUploading(true);
-    // Simulate API finalization
     setTimeout(() => {
       setIsUploading(false);
       onSave();
@@ -121,7 +122,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
   }, [previewUrl, initialData]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
+    <form id="media-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
       
       {/* Upload Zone & Preview */}
       <div className="flex-1">
@@ -160,15 +161,14 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                       <span>{uploadProgress}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-brand-500 transition-all duration-300" 
-                        style={{ width: `${uploadProgress}%` }}
-                      />
+                      <div className="h-full bg-brand-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                     </div>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
+                    {/* Asegurar que type="button" para no disparar el form */}
                     <button 
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); clearFile(); }}
                       className="bg-white/20 backdrop-blur-xl p-4 rounded-full text-white border border-white/30 hover:bg-rose-500/40 transition-all active:scale-90 shadow-2xl"
                     >
@@ -195,13 +195,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
               )}
             </div>
           )}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            accept="image/*,video/*" 
-            onChange={handleFileChange} 
-          />
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileChange} />
         </div>
       </div>
 
@@ -213,6 +207,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
             <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Título del Medio *</label>
             <input 
               type="text" 
+              required
               placeholder="Ej. Cabalgata al atardecer..."
               value={title}
               maxLength={150}
@@ -226,6 +221,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
               <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Categoría Principal *</label>
               <div className="relative">
                 <select 
+                  required
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
@@ -291,26 +287,10 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
             />
           </div>
 
-          <button 
-            onClick={handleFinalSave}
-            disabled={!isFormValid || isUploading}
-            className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg
-              ${!isFormValid || isUploading 
-                ? 'bg-stone-100 text-stone-300 cursor-not-allowed' 
-                : 'bg-brand-500 text-white hover:bg-brand-600 shadow-brand-500/20'}
-            `}
-          >
-            {isUploading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <Save size={18} />
-                {initialData ? 'Guardar Cambios' : 'Subir Medio'}
-              </>
-            )}
-          </button>
+          {/* Botón Oculto */}
+          <button type="submit" className="hidden" disabled={!isFormValid || isUploading} />
         </div>
       </div>
-    </div>
+    </form>
   );
 };

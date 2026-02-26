@@ -178,7 +178,9 @@ function App() {
   const [whatsappSubView, setWhatsappSubView] = useState<'config' | 'channels'>('config');
   const [identityStatus, setIdentityStatus] = useState<'empty' | 'preview' | 'editing'>('preview');
   const [hasTempLogo, setHasTempLogo] = useState(false);
-  const [isCategoryValid, setIsCategoryValid] = useState(false);
+  
+  // Estado universal para validación de formularios
+  const [isFormValid, setIsFormValid] = useState(false);
   
   // Refs
   const shippingRef = React.useRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }>(null);
@@ -292,7 +294,7 @@ function App() {
     setActiveTab('Galería');
     setGalleryViewMode(mode);
     setSearchQuery('');
-    setIsCategoryValid(false);
+    setIsFormValid(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -300,6 +302,7 @@ function App() {
     setActiveTab('Tienda');
     setStoreViewMode(mode);
     setSearchQuery('');
+    setIsFormValid(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -355,6 +358,7 @@ function App() {
           setGalleryViewMode('list');
         }
         setSearchQuery('');
+        setIsFormValid(false);
         closeConfirm();
       }
     });
@@ -481,27 +485,37 @@ function App() {
                   Cancelar
                 </button>
                 
+                {/* === PÍLDORAS DE GALERÍA === */}
+                {isCreatingMedia && (
+                  <button type="submit" form="media-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Subir Medio
+                  </button>
+                )}
+                {isEditingMedia && (
+                  <button type="submit" form="media-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Guardar Cambios
+                  </button>
+                )}
                 {galleryViewMode === 'category_create' && (
-                  <button 
-                    type="submit"
-                    form="category-form"
-                    disabled={!isCategoryValid}
-                    className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isCategoryValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}
-                  >
-                    <Save size={18} className="text-stone-400" />
-                    Crear Categoría
+                  <button type="submit" form="category-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Crear Categoría
+                  </button>
+                )}
+                {galleryViewMode === 'category_edit' && (
+                  <button type="submit" form="category-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Guardar Cambios
                   </button>
                 )}
 
-                {galleryViewMode === 'category_edit' && (
-                  <button 
-                    type="submit"
-                    form="category-form"
-                    disabled={!isCategoryValid}
-                    className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isCategoryValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}
-                  >
-                    <Save size={18} className="text-stone-400" />
-                    Guardar Cambios
+                {/* === PÍLDORAS DE TIENDA === */}
+                {isCreatingProduct && (
+                  <button type="submit" form="product-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Crear Producto
+                  </button>
+                )}
+                {isEditingProduct && (
+                  <button type="submit" form="product-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <Save size={18} className="text-stone-400" /> Guardar Cambios
                   </button>
                 )}
                 
@@ -714,7 +728,7 @@ function App() {
                   onSetViewMode={setGalleryViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
-                  onValidationChange={setIsCategoryValid}
+                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isStoreMode ? (
@@ -725,6 +739,7 @@ function App() {
                   onSetViewMode={setStoreViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
+                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isOrdersMode ? (

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ShoppingBag, Search, PlusCircle, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../../types';
@@ -11,6 +10,7 @@ interface StoreViewProps {
   onSetViewMode?: (mode: 'list' | 'create' | 'edit') => void;
   showToast: (message: string, type?: 'success' | 'error') => void;
   setConfirmDialog: (dialog: any) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -72,7 +72,7 @@ const mockProducts: Product[] = [
   }
 ];
 
-export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'list', onSetViewMode, showToast, setConfirmDialog }) => {
+export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'list', onSetViewMode, showToast, setConfirmDialog, onValidationChange }) => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const storeTopRef = useRef<HTMLDivElement>(null);
@@ -128,6 +128,7 @@ export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'l
           showToast(editingProduct ? 'Producto actualizado' : 'Producto creado con éxito');
           onSetViewMode?.('list');
         }}
+        onValidationChange={onValidationChange}
       />
     );
   }

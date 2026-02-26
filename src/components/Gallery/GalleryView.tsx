@@ -102,6 +102,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
           showToast(editingMedia ? 'Medio actualizado con éxito' : 'Medio subido con éxito');
           onSetViewMode?.('list');
         }} 
+        onValidationChange={onValidationChange}
       />
     );
   }
