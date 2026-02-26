@@ -1,13 +1,12 @@
-
 import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 
 interface NewCategoryFormProps {
-  onCancel: () => void;
   onSave: () => void;
+  onCancel?: () => void; // Lo dejamos opcional por si GalleryView aún lo envía, pero ya no lo usamos aquí.
 }
 
-export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onCancel, onSave }) => {
+export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onSave }) => {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -16,7 +15,7 @@ export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onCancel, onSa
     if (!name.trim()) return;
     
     setIsSubmitting(true);
-    // Simulate API call
+    // Simula la llamada a la API
     setTimeout(() => {
       onSave();
       setIsSubmitting(false);
@@ -28,14 +27,16 @@ export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onCancel, onSa
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-white/60 overflow-hidden">
         <div className="p-8 sm:p-10">
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Main Required Field - Normalized to system standards */}
+          {/* Añadimos el ID al form para enlazarlo con el botón píldora externo de App.tsx */}
+          <form id="category-form" onSubmit={handleSubmit} className="space-y-6">
+            
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">
                 Nombre de la Categoría *
               </label>
               <input 
                 type="text" 
+                required
                 placeholder="Ej. Temporada de Cosecha, Nuevas Instalaciones..."
                 value={name}
                 autoFocus
@@ -47,7 +48,6 @@ export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onCancel, onSa
               )}
             </div>
 
-            {/* Informative Block - Normalized spacing and sizing */}
             <div className="bg-stone-50/80 p-6 rounded-[2rem] border border-stone-100 flex items-start gap-5">
               <div className="p-3 bg-white rounded-2xl text-stone-400 shadow-sm shrink-0">
                 <Info size={20} />
@@ -60,9 +60,10 @@ export const NewCategoryForm: React.FC<NewCategoryFormProps> = ({ onCancel, onSa
               </div>
             </div>
 
-            {/* Hidden Submit for Enter key support */}
+            {/* BOTÓN OCULTO: Solo sirve para activar el submit al presionar Enter. No es visible. */}
             <button type="submit" className="hidden" disabled={!name.trim() || isSubmitting} />
           </form>
+          
         </div>
       </div>
     </div>

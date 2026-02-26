@@ -478,6 +478,19 @@ function App() {
                   <X size={18} className="text-stone-400" />
                   Cancelar
                 </button>
+                
+                {/* BOTÓN PÍLDORA: CREAR CATEGORÍA */}
+                {galleryViewMode === 'category_create' && (
+                  <button 
+                    type="submit"
+                    form="category-form"
+                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  >
+                    <Save size={18} className="text-stone-400" />
+                    Crear Categoría
+                  </button>
+                )}
+                
               </div>
             ) : (isGalleryMode || isStoreMode || (isOrdersMode && ordersViewMode === 'list')) ? (
               <div className="relative group w-full sm:w-auto min-w-[300px]">
