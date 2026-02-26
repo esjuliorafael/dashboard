@@ -178,6 +178,7 @@ function App() {
   const [whatsappSubView, setWhatsappSubView] = useState<'config' | 'channels'>('config');
   const [identityStatus, setIdentityStatus] = useState<'empty' | 'preview' | 'editing'>('preview');
   const [hasTempLogo, setHasTempLogo] = useState(false);
+  const [isCategoryValid, setIsCategoryValid] = useState(false);
   
   // Refs
   const shippingRef = React.useRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }>(null);
@@ -291,6 +292,7 @@ function App() {
     setActiveTab('Galería');
     setGalleryViewMode(mode);
     setSearchQuery('');
+    setIsCategoryValid(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -479,15 +481,27 @@ function App() {
                   Cancelar
                 </button>
                 
-                {/* BOTÓN PÍLDORA: CREAR CATEGORÍA */}
                 {galleryViewMode === 'category_create' && (
                   <button 
                     type="submit"
                     form="category-form"
-                    className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                    disabled={!isCategoryValid}
+                    className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isCategoryValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}
                   >
                     <Save size={18} className="text-stone-400" />
                     Crear Categoría
+                  </button>
+                )}
+
+                {galleryViewMode === 'category_edit' && (
+                  <button 
+                    type="submit"
+                    form="category-form"
+                    disabled={!isCategoryValid}
+                    className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isCategoryValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}
+                  >
+                    <Save size={18} className="text-stone-400" />
+                    Guardar Cambios
                   </button>
                 )}
                 
@@ -700,6 +714,7 @@ function App() {
                   onSetViewMode={setGalleryViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
+                  onValidationChange={setIsCategoryValid}
                 />
               </div>
             ) : isStoreMode ? (

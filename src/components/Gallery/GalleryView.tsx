@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Media } from '../../types';
@@ -13,6 +12,7 @@ interface GalleryViewProps {
   onSetViewMode?: (mode: 'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit') => void;
   showToast: (message: string, type?: 'success' | 'error') => void;
   setConfirmDialog: (dialog: any) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -35,7 +35,7 @@ const galleryMedia: Media[] = [
   { id: '15', title: 'Jardines Interiores', description: 'Un oasis de paz rodeado de muros históricos.', type: 'image', category: 'Instalaciones', subcategory: 'Arquitectura', url: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&q=80&w=800', likes: 58, isFavorite: true, createdAt: '2023-10-25T00:00:00Z' },
 ];
 
-export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode = 'list', onSetViewMode, showToast, setConfirmDialog }) => {
+export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode = 'list', onSetViewMode, showToast, setConfirmDialog, onValidationChange }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingCategory, setEditingCategory] = useState<{id: string, name: string} | null>(null);
   const [editingMedia, setEditingMedia] = useState<Media | null>(null);
@@ -114,6 +114,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
           showToast('Categoría creada correctamente');
           onSetViewMode?.('list');
         }} 
+        onValidationChange={onValidationChange}
       />
     );
   }
@@ -127,6 +128,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
           showToast('Categoría actualizada con éxito');
           onSetViewMode?.('categories_list');
         }} 
+        onValidationChange={onValidationChange}
       />
     );
   }
