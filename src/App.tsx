@@ -19,6 +19,7 @@ import { UsersView, UsersViewRef } from './components/System/Users/UsersView';
 import { IdentityView, IdentityViewRef } from './components/System/Identity/IdentityView';
 import { PaymentMethodView, PaymentMethodViewRef } from './components/System/Payment/PaymentMethodView';
 import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/WhatsAppView';
+import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
 import { Order, Media } from './types';
 
 // Mock Data
@@ -169,7 +170,7 @@ function App() {
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
-  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp'>('menu');
+  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory'>('menu');
   
   // View specific states
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
@@ -184,6 +185,7 @@ function App() {
   const identityRef = React.useRef<IdentityViewRef>(null);
   const paymentRef = React.useRef<PaymentMethodViewRef>(null);
   const whatsappRef = React.useRef<WhatsAppViewRef>(null);
+  const inventoryRef = React.useRef<InventorySettingsViewRef>(null);
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -299,7 +301,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' = 'menu') => {
+  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' = 'menu') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
     setShippingSubView('config');
@@ -324,6 +326,7 @@ function App() {
       case 'Añadir Logo': navigateToSystem('identity'); break;
       case 'Método de Pago': navigateToSystem('payment'); break;
       case 'WhatsApp': navigateToSystem('whatsapp'); break;
+      case 'Lib. Inventario': navigateToSystem('inventory'); break;
       case 'Ver Órdenes': 
       case 'Volver':
         setActiveTab('Órdenes');
@@ -417,6 +420,8 @@ function App() {
                   ) : (
                     <>Integración <span className="text-stone-600">WhatsApp</span></>
                   )
+                ) : systemViewMode === 'inventory' ? (
+                  <>Ajustes de <span className="text-stone-600">Inventario</span></>
                 ) : (
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
@@ -456,6 +461,8 @@ function App() {
                             ? whatsappSubView === 'channels'
                                 ? 'Configura números y plantillas específicas para cada departamento.'
                                 : 'Ajusta el número y mensaje principal de confirmación de órdenes.'
+                          : systemViewMode === 'inventory'
+                            ? 'Configura la cancelación automática de órdenes vencidas para liberar el stock.'
                           : 'Ajusta los parámetros globales, zonificación y usuarios del rancho.'
                       : 'Gestiona el inventario, ventas y medios desde tu panel central.'}
             </p>
@@ -603,6 +610,16 @@ function App() {
                   </button>
                 )}
               </div>
+            ) : (isSystemMode && systemViewMode === 'inventory') ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => inventoryRef.current?.handleSaveConfig()}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <Save size={18} className="text-stone-400" />
+                  Guardar Configuración
+                </button>
+              </div>
             ) : (isSystemMode && systemViewMode === 'identity') ? (
               <div className="flex gap-3">
                 {identityStatus === 'empty' && (
@@ -729,6 +746,11 @@ function App() {
                     ref={whatsappRef} 
                     subView={whatsappSubView}
                     setSubView={setWhatsappSubView}
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'inventory' ? (
+                  <InventorySettingsView 
+                    ref={inventoryRef} 
                     showToast={showToast} 
                   />
                 ) : (
