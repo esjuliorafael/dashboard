@@ -69,14 +69,12 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
     }));
 
     const handleDefaultChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
-      setDefaultWhatsApp(prev => ({ ...prev, [e.target.name]: value }));
+      setDefaultWhatsApp(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
     const handleChannelChange = (id: string, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
       setChannels(prev => prev.map(channel => 
-        channel.id === id ? { ...channel, [e.target.name]: value } : channel
+        channel.id === id ? { ...channel, [e.target.name]: e.target.value } : channel
       ));
     };
 
@@ -98,35 +96,34 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
           <div className="space-y-8">
             {channels.map((channel) => (
               <div key={channel.id} className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-                <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100">
+                
+                {/* Cabecera con Toggle estilo ShippingView */}
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
                       <Briefcase size={20} />
                     </div>
                     <div>
-                      <h3 className="font-black text-stone-800 uppercase tracking-widest text-sm">{channel.name}</h3>
+                      <h3 className="font-black text-stone-800 uppercase tracking-widest text-sm leading-tight">{channel.name}</h3>
                       <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Propósito: {channel.purposeKey}</p>
                     </div>
                   </div>
-                  {/* Toggle Activo/Inactivo */}
-                  <label className="flex items-center cursor-pointer">
-                    <div className="relative">
-                      <input type="checkbox" name="active" checked={channel.active} onChange={(e) => handleChannelChange(channel.id, e)} className="sr-only" />
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${channel.active ? 'bg-brand-500' : 'bg-stone-200'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${channel.active ? 'transform translate-x-6' : ''}`}></div>
-                    </div>
-                    <span className="ml-3 text-xs font-bold uppercase tracking-widest text-stone-500">
-                      {channel.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </label>
+                  
+                  {/* Toggle Button */}
+                  <button 
+                    onClick={() => setChannels(prev => prev.map(c => c.id === channel.id ? { ...c, active: !c.active } : c))}
+                    className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${channel.active ? 'bg-brand-500' : 'bg-stone-300'}`}
+                  >
+                    <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${channel.active ? 'left-8' : 'left-1'}`} />
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 max-w-4xl opacity-100 transition-opacity" style={{ opacity: channel.active ? 1 : 0.5, pointerEvents: channel.active ? 'auto' : 'none' }}>
+                <div className="grid grid-cols-1 gap-6 max-w-4xl transition-all duration-300" style={{ opacity: channel.active ? 1 : 0.5, pointerEvents: channel.active ? 'auto' : 'none' }}>
                   <div className="group">
                     <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Número de WhatsApp</label>
                     <div className="relative">
                       <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none"><Smartphone size={18} /></span>
-                      <input type="text" name="phoneNumber" value={channel.phoneNumber} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Ej. 524432020019 (Código de país + número sin espacios)" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                      <input type="text" name="phoneNumber" value={channel.phoneNumber} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Ej. 524432020019" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
                     <p className="text-[10px] text-stone-400 font-medium mt-2 ml-2">Debe incluir código de país (Ej. 52 para México). No incluyas el símbolo "+".</p>
                   </div>
@@ -154,30 +151,28 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
         {/* Tarjeta WhatsApp Principal */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100">
+          {/* Cabecera con Toggle estilo ShippingView */}
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600">
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600">
                 <MessageCircle size={20} />
               </div>
               <div>
-                <h3 className="font-black text-stone-800 uppercase tracking-widest text-sm">WhatsApp Principal</h3>
-                <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Recibe los mensajes de órdenes mixtas o globales</p>
+                <h3 className="font-black text-stone-800 uppercase tracking-widest text-sm leading-tight">WhatsApp Principal</h3>
+                <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Recibe mensajes de órdenes mixtas</p>
               </div>
             </div>
-            {/* Toggle Activo/Inactivo */}
-            <label className="flex items-center cursor-pointer">
-              <div className="relative">
-                <input type="checkbox" name="active" checked={defaultWhatsApp.active} onChange={handleDefaultChange} className="sr-only" />
-                <div className={`block w-14 h-8 rounded-full transition-colors ${defaultWhatsApp.active ? 'bg-green-500' : 'bg-stone-200'}`}></div>
-                <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${defaultWhatsApp.active ? 'transform translate-x-6' : ''}`}></div>
-              </div>
-              <span className="ml-3 text-xs font-bold uppercase tracking-widest text-stone-500">
-                {defaultWhatsApp.active ? 'Activo' : 'Inactivo'}
-              </span>
-            </label>
+            
+            {/* Toggle Button */}
+            <button 
+              onClick={() => setDefaultWhatsApp({ ...defaultWhatsApp, active: !defaultWhatsApp.active })}
+              className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${defaultWhatsApp.active ? 'bg-green-500' : 'bg-stone-300'}`}
+            >
+              <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${defaultWhatsApp.active ? 'left-8' : 'left-1'}`} />
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 max-w-4xl opacity-100 transition-opacity" style={{ opacity: defaultWhatsApp.active ? 1 : 0.5, pointerEvents: defaultWhatsApp.active ? 'auto' : 'none' }}>
+          <div className="grid grid-cols-1 gap-6 max-w-4xl transition-all duration-300" style={{ opacity: defaultWhatsApp.active ? 1 : 0.5, pointerEvents: defaultWhatsApp.active ? 'auto' : 'none' }}>
             <div className="group">
               <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Número de WhatsApp Principal</label>
               <div className="relative">
