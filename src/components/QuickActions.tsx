@@ -3,7 +3,7 @@ import {
   Image, PlusCircle, Layers, ShoppingBag, 
   PackagePlus, ListOrdered, ClipboardList, PenTool, 
   Settings, Truck, Users, LayoutGrid, Tags, FolderPlus,
-  ArrowLeft, CreditCard, MessageCircle, Timer // <-- Importamos Timer
+  ArrowLeft, CreditCard, MessageCircle, Timer, Bell, Receipt // <-- Importamos Receipt
 } from 'lucide-react';
 import { QuickActionGroup } from '../types';
 
@@ -48,7 +48,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
         { icon: <CreditCard size={20} />, label: 'Método de Pago' },
         { icon: <MessageCircle size={20} />, label: 'WhatsApp' },
         { icon: <Truck size={20} />, label: 'Configurar Envíos' },
-        { icon: <Timer size={20} />, label: 'Lib. Inventario' }, // <-- Nuevo botón
+        { icon: <Timer size={20} />, label: 'Lib. Inventario' },
+        { icon: <Bell size={20} />, label: 'Notificaciones' },
+        { icon: <Receipt size={20} />, label: 'Estado de Cuenta' }, // <-- Nuevo botón añadido
         { icon: <Users size={20} />, label: 'Usuarios' },
         { icon: <Settings size={20} />, label: 'Config' },
       ]

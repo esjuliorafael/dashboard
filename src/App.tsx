@@ -20,6 +20,8 @@ import { IdentityView, IdentityViewRef } from './components/System/Identity/Iden
 import { PaymentMethodView, PaymentMethodViewRef } from './components/System/Payment/PaymentMethodView';
 import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/WhatsAppView';
 import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
+import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
+import { BillingView, BillingViewRef } from './components/System/Billing/BillingView'; // <-- Importamos BillingView
 import { Order, Media } from './types';
 
 // Mock Data
@@ -170,16 +172,15 @@ function App() {
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
-  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory'>('menu');
   
-  // View specific states
+  // Actualizado para incluir 'notifications' y 'billing'
+  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing'>('menu');
+  
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
   const [paymentSubView, setPaymentSubView] = useState<'config' | 'channels'>('config'); 
   const [whatsappSubView, setWhatsappSubView] = useState<'config' | 'channels'>('config');
   const [identityStatus, setIdentityStatus] = useState<'empty' | 'preview' | 'editing'>('preview');
   const [hasTempLogo, setHasTempLogo] = useState(false);
-  
-  // Estado universal para validación de formularios
   const [isFormValid, setIsFormValid] = useState(false);
   
   // Refs
@@ -189,12 +190,13 @@ function App() {
   const paymentRef = React.useRef<PaymentMethodViewRef>(null);
   const whatsappRef = React.useRef<WhatsAppViewRef>(null);
   const inventoryRef = React.useRef<InventorySettingsViewRef>(null);
+  const notificationsRef = React.useRef<NotificationSettingsViewRef>(null);
+  const billingRef = React.useRef<BillingViewRef>(null); // <-- Referencia para Billing
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Feedback States
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ 
     isOpen: boolean, 
@@ -306,7 +308,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' = 'menu') => {
+  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing' = 'menu') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
     setShippingSubView('config');
@@ -332,6 +334,8 @@ function App() {
       case 'Método de Pago': navigateToSystem('payment'); break;
       case 'WhatsApp': navigateToSystem('whatsapp'); break;
       case 'Lib. Inventario': navigateToSystem('inventory'); break;
+      case 'Notificaciones': navigateToSystem('notifications'); break;
+      case 'Estado de Cuenta': navigateToSystem('billing'); break; // <-- Navegación a Billing
       case 'Ver Órdenes': 
       case 'Volver':
         setActiveTab('Órdenes');
@@ -428,6 +432,10 @@ function App() {
                   )
                 ) : systemViewMode === 'inventory' ? (
                   <>Ajustes de <span className="text-stone-600">Inventario</span></>
+                ) : systemViewMode === 'notifications' ? (
+                  <>Alertas y <span className="text-stone-600">Notificaciones</span></>
+                ) : systemViewMode === 'billing' ? (
+                  <>Estado de Cuenta y <span className="text-stone-600">Servicios</span></>
                 ) : (
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
@@ -469,6 +477,10 @@ function App() {
                                 : 'Ajusta el número y mensaje principal de confirmación de órdenes.'
                           : systemViewMode === 'inventory'
                             ? 'Configura la cancelación automática de órdenes vencidas para liberar el stock.'
+                          : systemViewMode === 'notifications'
+                            ? 'Administra los avisos por correo electrónico para mantenerte informado de tus ventas.'
+                          : systemViewMode === 'billing'
+                            ? 'Consulta las fechas de vencimiento de tu plataforma y gestiona cargos adicionales.'
                           : 'Ajusta los parámetros globales, zonificación y usuarios del rancho.'
                       : 'Gestiona el inventario, ventas y medios desde tu panel central.'}
             </p>
@@ -485,7 +497,6 @@ function App() {
                   Cancelar
                 </button>
                 
-                {/* === PÍLDORAS DE GALERÍA === */}
                 {isCreatingMedia && (
                   <button type="submit" form="media-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
                     <Save size={18} className="text-stone-400" /> Subir Medio
@@ -506,8 +517,6 @@ function App() {
                     <Save size={18} className="text-stone-400" /> Guardar Cambios
                   </button>
                 )}
-
-                {/* === PÍLDORAS DE TIENDA === */}
                 {isCreatingProduct && (
                   <button type="submit" form="product-form" disabled={!isFormValid} className={`px-6 py-3.5 rounded-full shadow-sm border flex items-center gap-2 text-stone-600 font-bold text-sm transition-all active:scale-95 ${!isFormValid ? 'bg-stone-50 border-stone-100 opacity-50 cursor-not-allowed' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
                     <Save size={18} className="text-stone-400" /> Crear Producto
@@ -661,6 +670,26 @@ function App() {
                   Guardar Configuración
                 </button>
               </div>
+            ) : (isSystemMode && systemViewMode === 'notifications') ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => notificationsRef.current?.handleSaveConfig()}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <Save size={18} className="text-stone-400" />
+                  Guardar Configuración
+                </button>
+              </div>
+            ) : (isSystemMode && systemViewMode === 'billing') ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => billingRef.current?.handleSaveConfig()}
+                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                >
+                  <Save size={18} className="text-stone-400" />
+                  Guardar Estado de Cuenta
+                </button>
+              </div>
             ) : (isSystemMode && systemViewMode === 'identity') ? (
               <div className="flex gap-3">
                 {identityStatus === 'empty' && (
@@ -728,7 +757,6 @@ function App() {
                   onSetViewMode={setGalleryViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
-                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isStoreMode ? (
@@ -739,7 +767,6 @@ function App() {
                   onSetViewMode={setStoreViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
-                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isOrdersMode ? (
@@ -794,6 +821,16 @@ function App() {
                 ) : systemViewMode === 'inventory' ? (
                   <InventorySettingsView 
                     ref={inventoryRef} 
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'notifications' ? (
+                  <NotificationSettingsView 
+                    ref={notificationsRef} 
+                    showToast={showToast} 
+                  />
+                ) : systemViewMode === 'billing' ? (
+                  <BillingView 
+                    ref={billingRef} 
                     showToast={showToast} 
                   />
                 ) : (
