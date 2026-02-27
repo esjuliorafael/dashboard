@@ -1,4 +1,3 @@
-
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { Settings, MapPin, ChevronRight, Save, Truck, Info, AlertCircle, CheckCircle2, Package, Bird } from 'lucide-react';
 import { ShippingConfig, StateZone, ShippingZone } from '../../../types';
@@ -13,7 +12,6 @@ interface ShippingViewProps {
 export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }, ShippingViewProps>(
   ({ showToast, subView, setSubView }, ref) => {
     
-    // Global Config State
     const [config, setConfig] = useState<ShippingConfig>({
       baseCostArticles: 250,
       freeShippingArticles: false,
@@ -22,12 +20,11 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
       freeShippingBirds: false,
     });
 
-    // Zones State
     const [states, setStates] = useState<StateZone[]>(
       MEXICO_STATES.map((name, index) => ({
         id: `state-${index}`,
         name,
-        zone: index % 3 === 0 ? 'extendida' : 'normal', // Mock initial distribution
+        zone: index % 3 === 0 ? 'extendida' : 'normal',
       }))
     );
 
@@ -143,20 +140,22 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
           {/* Bloque: Envío de Artículos */}
           <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-100 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
                 <Package size={24} />
               </div>
               <div>
-                <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs">Envío de Artículos</h3>
-                <p className="text-[10px] text-stone-400 font-bold">COSTO BASE FIJO</p>
+                <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs leading-tight">Envío de Artículos</h3>
+                <p className="text-[10px] text-stone-400 font-bold mt-1">COSTO BASE FIJO</p>
               </div>
             </div>
             
             <div className="space-y-8 flex-1">
-              <div className={`transition-all duration-300 ${config.freeShippingArticles ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3 ml-1">Costo base envío artículos</label>
+              <div className={`space-y-2 group transition-all duration-300 ${config.freeShippingArticles ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Costo base envío artículos</label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
+                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors font-bold text-lg">
+                    $
+                  </div>
                   <input 
                     type="number"
                     value={config.baseCostArticles}
@@ -166,7 +165,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                   />
                 </div>
                 {config.freeShippingArticles && (
-                  <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-brand-600 bg-brand-50 px-4 py-2 rounded-xl border border-brand-100">
+                  <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-brand-600 bg-brand-50 px-4 py-2 rounded-xl border border-brand-100 animate-in zoom-in duration-300">
                     <Info size={14} />
                     <span>EL COSTO BASE SE IGNORA (ENVÍO GRATIS ACTIVO)</span>
                   </div>
@@ -181,7 +180,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                   </div>
                   <button 
                     onClick={() => setConfig({ ...config, freeShippingArticles: !config.freeShippingArticles })}
-                    className={`w-14 h-7 rounded-full transition-all relative ${
+                    className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${
                       config.freeShippingArticles ? 'bg-brand-500' : 'bg-stone-300'
                     }`}
                   >
@@ -197,21 +196,23 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
           {/* Bloque: Envío de Aves */}
           <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-100 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
                 <Bird size={24} />
               </div>
               <div>
-                <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs">Envío de Aves</h3>
-                <p className="text-[10px] text-stone-400 font-bold">CONFIGURADO POR ZONA</p>
+                <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs leading-tight">Envío de Aves</h3>
+                <p className="text-[10px] text-stone-400 font-bold mt-1">CONFIGURADO POR ZONA</p>
               </div>
             </div>
 
             <div className="space-y-6 flex-1">
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 transition-all duration-300 ${config.freeShippingBirds ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                <div>
-                  <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3 ml-1">Costo zona normal</label>
+                <div className="space-y-2 group">
+                  <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Costo zona normal</label>
                   <div className="relative">
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
+                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors font-bold text-lg">
+                      $
+                    </div>
                     <input 
                       type="number"
                       value={config.costNormalZone}
@@ -221,10 +222,12 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3 ml-1">Costo zona extendida</label>
+                <div className="space-y-2 group">
+                  <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Costo zona extendida</label>
                   <div className="relative">
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
+                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors font-bold text-lg">
+                      $
+                    </div>
                     <input 
                       type="number"
                       value={config.costExtendedZone}
@@ -237,7 +240,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
               </div>
 
               {config.freeShippingBirds && (
-                <div className="flex items-center gap-2 text-[10px] font-bold text-brand-600 bg-brand-50 px-4 py-2 rounded-xl border border-brand-100">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-brand-600 bg-brand-50 px-4 py-2 rounded-xl border border-brand-100 animate-in zoom-in duration-300">
                   <Info size={14} />
                   <span>LOS COSTOS POR ZONA SE IGNORAN (ENVÍO GRATIS ACTIVO)</span>
                 </div>
@@ -251,7 +254,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                   </div>
                   <button 
                     onClick={() => setConfig({ ...config, freeShippingBirds: !config.freeShippingBirds })}
-                    className={`w-14 h-7 rounded-full transition-all relative ${
+                    className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${
                       config.freeShippingBirds ? 'bg-brand-500' : 'bg-stone-300'
                     }`}
                   >

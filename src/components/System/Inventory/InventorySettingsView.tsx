@@ -12,7 +12,6 @@ interface InventorySettingsViewProps {
 export const InventorySettingsView = forwardRef<InventorySettingsViewRef, InventorySettingsViewProps>(
   ({ showToast }, ref) => {
     
-    // Estado inicial de la configuración
     const [config, setConfig] = useState({
       active: true,
       hours: 24
@@ -31,9 +30,8 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         
-        {/* Banner de Información */}
         <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
-          <div className="text-brand-500 mt-1"><Info size={24} /></div>
+          <div className="text-brand-500 mt-1 shrink-0"><Info size={24} /></div>
           <div>
             <h4 className="font-bold text-brand-900">¿Cómo funciona la liberación automática?</h4>
             <p className="text-sm text-brand-800 mt-1 leading-relaxed">
@@ -42,10 +40,7 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
           </div>
         </div>
 
-        {/* Tarjeta Principal */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-          
-          {/* Cabecera con Toggle clonado de Payment/WhatsApp */}
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
@@ -57,7 +52,6 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
               </div>
             </div>
 
-            {/* Toggle Button */}
             <button 
               onClick={() => setConfig({ ...config, active: !config.active })}
               className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${config.active ? 'bg-brand-500' : 'bg-stone-300'}`}
@@ -66,16 +60,13 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
             </button>
           </div>
 
-          {/* Formulario que reacciona a la activación */}
-          <div className="grid grid-cols-1 gap-6 max-w-4xl transition-all duration-300" style={{ opacity: config.active ? 1 : 0.5, pointerEvents: config.active ? 'auto' : 'none' }}>
-            
-            {/* Input de Horas limitado en ancho para mantener proporción */}
-            <div className="group max-w-md">
-              <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Tiempo Límite de Pago</label>
+          <div className="flex flex-col gap-6 transition-all duration-300" style={{ opacity: config.active ? 1 : 0.5, pointerEvents: config.active ? 'auto' : 'none' }}>
+            <div className="space-y-2 group">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Tiempo Límite de Pago</label>
               <div className="relative">
-                <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                   <Timer size={18} />
-                </span>
+                </div>
                 <input 
                   type="number" 
                   min="1"
@@ -85,15 +76,14 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
                   placeholder="Ej. 24" 
                   className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-16 outline-none transition-all font-black text-stone-700 shadow-sm" 
                 />
-                <span className="absolute right-5 inset-y-0 flex items-center justify-center text-stone-400 font-bold text-[10px] uppercase tracking-widest pointer-events-none">
+                <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-stone-400 font-bold text-[10px] uppercase tracking-widest">
                   Horas
-                </span>
+                </div>
               </div>
-              <p className="text-[10px] text-stone-400 font-medium mt-2 ml-2 leading-relaxed">
+              <p className="text-[10px] text-stone-400 font-medium ml-1 leading-relaxed">
                 Después de este periodo, el sistema cancelará la orden de forma automática si no ha sido pagada.
               </p>
             </div>
-
           </div>
         </div>
 

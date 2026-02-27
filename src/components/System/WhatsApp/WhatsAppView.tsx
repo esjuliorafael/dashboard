@@ -27,14 +27,12 @@ interface WhatsAppChannel extends WhatsAppDetails {
 export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
   ({ showToast, subView, setSubView }, ref) => {
     
-    // Configuración de WhatsApp por defecto
     const [defaultWhatsApp, setDefaultWhatsApp] = useState<WhatsAppDetails>({
       active: true,
       phoneNumber: '524432020019',
       template: 'Hola, he realizado el pedido #{id_orden}.\n\nCliente: {nombre_cliente}\nTotal: ${total}\n\nItems: {lista_productos}\n\nEl envío se realiza al aeropuerto o terminal más cercano a tu estado. Nos pondremos en contacto para coordinar la entrega.'
     });
 
-    // Configuración por canales
     const [channels, setChannels] = useState<WhatsAppChannel[]>([
       {
         id: 'channel-1',
@@ -78,16 +76,14 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
       ));
     };
 
-    // VISTA DE CANALES DE VENTA (SUB-VISTA)
     if (subView === 'channels') {
       return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-          
-          <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start">
-            <div className="text-brand-500 mt-1"><Info size={24} /></div>
+          <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
+            <div className="text-brand-500 mt-1 shrink-0"><Info size={24} /></div>
             <div>
               <h4 className="font-bold text-brand-900">Mensajería por Departamento</h4>
-              <p className="text-sm text-brand-700 mt-1">
+              <p className="text-sm text-brand-700 mt-1 leading-relaxed">
                 Personaliza a qué número llega el mensaje y qué texto predeterminado se envía según el tipo de ave comprada.
               </p>
             </div>
@@ -96,8 +92,6 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
           <div className="space-y-8">
             {channels.map((channel) => (
               <div key={channel.id} className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-                
-                {/* Cabecera con Toggle estilo ShippingView */}
                 <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
@@ -109,7 +103,6 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
                     </div>
                   </div>
                   
-                  {/* Toggle Button */}
                   <button 
                     onClick={() => setChannels(prev => prev.map(c => c.id === channel.id ? { ...c, active: !c.active } : c))}
                     className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${channel.active ? 'bg-brand-500' : 'bg-stone-300'}`}
@@ -118,23 +111,28 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 max-w-4xl transition-all duration-300" style={{ opacity: channel.active ? 1 : 0.5, pointerEvents: channel.active ? 'auto' : 'none' }}>
-                  <div className="group">
-                    <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Número de WhatsApp</label>
+                <div className="flex flex-col gap-6 transition-all duration-300" style={{ opacity: channel.active ? 1 : 0.5, pointerEvents: channel.active ? 'auto' : 'none' }}>
+                  <div className="space-y-2 group">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Número de WhatsApp</label>
                     <div className="relative">
-                      <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none"><Smartphone size={18} /></span>
+                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
+                        <Smartphone size={18} />
+                      </div>
                       <input type="text" name="phoneNumber" value={channel.phoneNumber} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Ej. 524432020019" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
-                    <p className="text-[10px] text-stone-400 font-medium mt-2 ml-2">Debe incluir código de país (Ej. 52 para México). No incluyas el símbolo "+".</p>
+                    <p className="text-[10px] text-stone-400 font-medium ml-1">Debe incluir código de país (Ej. 52 para México). No incluyas el símbolo "+".</p>
                   </div>
                   
-                  <div className="group">
-                    <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Plantilla del Mensaje</label>
+                  <div className="space-y-2 group">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Plantilla del Mensaje</label>
                     <div className="relative">
-                      <span className="absolute left-5 top-5 flex items-start justify-center text-stone-400 pointer-events-none"><FileText size={18} /></span>
+                      {/* Para los textarea, top-5 es necesario porque no pueden centrarse al 100% de la altura vertical */}
+                      <div className="absolute top-5 left-4 flex items-start pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
+                        <FileText size={18} />
+                      </div>
                       <textarea name="template" value={channel.template} onChange={(e) => handleChannelChange(channel.id, e)} rows={5} placeholder="Escribe la plantilla del mensaje..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm resize-none leading-relaxed"></textarea>
                     </div>
-                    <p className="text-[10px] text-stone-400 font-medium mt-2 ml-2">Variables permitidas: <span className="font-bold text-brand-600">{`{id_orden}`}</span>, <span className="font-bold text-brand-600">{`{nombre_cliente}`}</span>, <span className="font-bold text-brand-600">{`{total}`}</span>, <span className="font-bold text-brand-600">{`{lista_productos}`}</span></p>
+                    <p className="text-[10px] text-stone-400 font-medium ml-1">Variables permitidas: <span className="font-bold text-brand-600">{`{id_orden}`}</span>, <span className="font-bold text-brand-600">{`{nombre_cliente}`}</span>, <span className="font-bold text-brand-600">{`{total}`}</span>, <span className="font-bold text-brand-600">{`{lista_productos}`}</span></p>
                   </div>
                 </div>
               </div>
@@ -144,14 +142,10 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
       );
     }
 
-    // VISTA PRINCIPAL (CONFIGURACIÓN POR DEFECTO)
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         
-        {/* Tarjeta WhatsApp Principal */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-          
-          {/* Cabecera con Toggle estilo ShippingView */}
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600">
@@ -163,7 +157,6 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
               </div>
             </div>
             
-            {/* Toggle Button */}
             <button 
               onClick={() => setDefaultWhatsApp({ ...defaultWhatsApp, active: !defaultWhatsApp.active })}
               className={`flex-shrink-0 w-14 h-7 rounded-full transition-all relative ${defaultWhatsApp.active ? 'bg-green-500' : 'bg-stone-300'}`}
@@ -172,36 +165,37 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 max-w-4xl transition-all duration-300" style={{ opacity: defaultWhatsApp.active ? 1 : 0.5, pointerEvents: defaultWhatsApp.active ? 'auto' : 'none' }}>
-            <div className="group">
-              <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Número de WhatsApp Principal</label>
+          <div className="flex flex-col gap-6 transition-all duration-300" style={{ opacity: defaultWhatsApp.active ? 1 : 0.5, pointerEvents: defaultWhatsApp.active ? 'auto' : 'none' }}>
+            <div className="space-y-2 group">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Número de WhatsApp Principal</label>
               <div className="relative">
-                <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none"><Smartphone size={18} /></span>
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-green-500 transition-colors">
+                  <Smartphone size={18} />
+                </div>
                 <input type="text" name="phoneNumber" value={defaultWhatsApp.phoneNumber} onChange={handleDefaultChange} placeholder="Ej. 524432020019" className="w-full bg-stone-50 border-2 border-transparent focus:border-green-500/20 focus:bg-white focus:ring-4 focus:ring-green-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
               </div>
             </div>
 
-            <div className="group">
-              <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Plantilla del Mensaje</label>
+            <div className="space-y-2 group">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Plantilla del Mensaje</label>
               <div className="relative">
-                <span className="absolute left-5 top-5 flex items-start justify-center text-stone-400 pointer-events-none"><FileText size={18} /></span>
+                <div className="absolute top-5 left-4 flex items-start pointer-events-none text-stone-400 group-focus-within:text-green-500 transition-colors">
+                  <FileText size={18} />
+                </div>
                 <textarea name="template" value={defaultWhatsApp.template} onChange={handleDefaultChange} rows={6} placeholder="Escribe la plantilla del mensaje..." className="w-full bg-stone-50 border-2 border-transparent focus:border-green-500/20 focus:bg-white focus:ring-4 focus:ring-green-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm resize-none leading-relaxed"></textarea>
               </div>
-              <p className="text-[10px] text-stone-400 font-medium mt-2 ml-2">Variables: <span className="font-bold text-green-600">{`{id_orden}`}</span>, <span className="font-bold text-green-600">{`{nombre_cliente}`}</span>, <span className="font-bold text-green-600">{`{total}`}</span>, <span className="font-bold text-green-600">{`{lista_productos}`}</span></p>
+              <p className="text-[10px] text-stone-400 font-medium ml-1">Variables: <span className="font-bold text-green-600">{`{id_orden}`}</span>, <span className="font-bold text-green-600">{`{nombre_cliente}`}</span>, <span className="font-bold text-green-600">{`{total}`}</span>, <span className="font-bold text-green-600">{`{lista_productos}`}</span></p>
             </div>
           </div>
-          
         </div>
 
-        {/* Resumen y Acceso a Canales */}
         <div className="mt-12">
           <div className="flex items-center gap-2 mb-6">
             <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs">Desglose por Departamento</h3>
           </div>
-
           <div className="bg-stone-900 p-8 rounded-[3rem] text-white flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl">
             <div className="flex items-center gap-6 sm:gap-12">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-stone-800 flex items-center justify-center text-stone-400">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-stone-800 flex items-center justify-center text-stone-400 shrink-0">
                 <MessageCircle size={32} />
               </div>
               <div className="text-left">
@@ -212,7 +206,6 @@ export const WhatsAppView = forwardRef<WhatsAppViewRef, WhatsAppViewProps>(
                 </div>
               </div>
             </div>
-            
             <button 
               onClick={() => setSubView('channels')}
               className="w-full sm:w-auto px-10 py-5 bg-white text-stone-900 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-95 flex items-center justify-center gap-3 shadow-lg"
