@@ -21,7 +21,7 @@ import { PaymentMethodView, PaymentMethodViewRef } from './components/System/Pay
 import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/WhatsAppView';
 import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
-import { BillingView, BillingViewRef } from './components/System/Billing/BillingView'; // <-- Importamos BillingView
+import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
 import { Order, Media } from './types';
 
 // Mock Data
@@ -173,7 +173,6 @@ function App() {
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
   
-  // Actualizado para incluir 'notifications' y 'billing'
   const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing'>('menu');
   
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
@@ -191,7 +190,7 @@ function App() {
   const whatsappRef = React.useRef<WhatsAppViewRef>(null);
   const inventoryRef = React.useRef<InventorySettingsViewRef>(null);
   const notificationsRef = React.useRef<NotificationSettingsViewRef>(null);
-  const billingRef = React.useRef<BillingViewRef>(null); // <-- Referencia para Billing
+  const billingRef = React.useRef<BillingViewRef>(null);
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -335,7 +334,7 @@ function App() {
       case 'WhatsApp': navigateToSystem('whatsapp'); break;
       case 'Lib. Inventario': navigateToSystem('inventory'); break;
       case 'Notificaciones': navigateToSystem('notifications'); break;
-      case 'Estado de Cuenta': navigateToSystem('billing'); break; // <-- Navegación a Billing
+      case 'Estado de Cuenta': navigateToSystem('billing'); break;
       case 'Ver Órdenes': 
       case 'Volver':
         setActiveTab('Órdenes');
@@ -757,6 +756,7 @@ function App() {
                   onSetViewMode={setGalleryViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
+                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isStoreMode ? (
@@ -767,6 +767,7 @@ function App() {
                   onSetViewMode={setStoreViewMode} 
                   showToast={showToast}
                   setConfirmDialog={setConfirmDialog}
+                  onValidationChange={setIsFormValid}
                 />
               </div>
             ) : isOrdersMode ? (
@@ -795,7 +796,11 @@ function App() {
                     showToast={showToast} 
                   />
                 ) : systemViewMode === 'users' ? (
-                  <UsersView ref={usersRef} showToast={showToast} />
+                  <UsersView 
+                    ref={usersRef} 
+                    showToast={showToast}
+                    setConfirmDialog={setConfirmDialog} // <-- Pasamos el modal
+                  />
                 ) : systemViewMode === 'identity' ? (
                   <IdentityView 
                     ref={identityRef} 
@@ -831,7 +836,8 @@ function App() {
                 ) : systemViewMode === 'billing' ? (
                   <BillingView 
                     ref={billingRef} 
-                    showToast={showToast} 
+                    showToast={showToast}
+                    setConfirmDialog={setConfirmDialog} // <-- Pasamos el modal
                   />
                 ) : (
                   <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-white/60 text-center">

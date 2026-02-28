@@ -3,7 +3,7 @@ import {
   Image, PlusCircle, Layers, ShoppingBag, 
   PackagePlus, ListOrdered, ClipboardList, PenTool, 
   Settings, Truck, Users, LayoutGrid, Tags, FolderPlus,
-  ArrowLeft, CreditCard, MessageCircle, Timer, Bell, Receipt // <-- Importamos Receipt
+  ArrowLeft, CreditCard, MessageCircle, Timer, Bell, Receipt
 } from 'lucide-react';
 import { QuickActionGroup } from '../types';
 
@@ -50,7 +50,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
         { icon: <Truck size={20} />, label: 'Configurar Envíos' },
         { icon: <Timer size={20} />, label: 'Lib. Inventario' },
         { icon: <Bell size={20} />, label: 'Notificaciones' },
-        { icon: <Receipt size={20} />, label: 'Estado de Cuenta' }, // <-- Nuevo botón añadido
+        { icon: <Receipt size={20} />, label: 'Estado de Cuenta' },
         { icon: <Users size={20} />, label: 'Usuarios' },
         { icon: <Settings size={20} />, label: 'Config' },
       ]
@@ -72,12 +72,15 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
               <button 
                 key={`${gIndex}-${iIndex}`}
                 onClick={() => onAction?.(action.label)}
-                className="flex flex-col items-center justify-center bg-white p-3 rounded-xl shadow-sm border border-stone-100 min-w-[80px] h-[80px] active:scale-95 transition-transform"
+                // MODIFICADO: w-20 h-20 para cuadrado fijo, p-2 para más espacio interno
+                className="flex flex-col items-center justify-center bg-white p-2 rounded-xl shadow-sm border border-stone-100 w-20 h-20 active:scale-95 transition-transform"
+                title={action.label} // Tooltip nativo para ver el nombre completo si se corta
               >
                 <div className="text-stone-600 mb-1.5 bg-stone-50 p-2 rounded-full">
                   {action.icon}
                 </div>
-                <span className="text-[10px] font-medium text-stone-500 text-center leading-tight">
+                {/* MODIFICADO: w-full truncate para cortar texto largo con '...' */}
+                <span className="text-[10px] font-medium text-stone-500 text-center leading-tight w-full truncate px-1">
                   {action.label}
                 </span>
               </button>

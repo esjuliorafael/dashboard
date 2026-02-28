@@ -1,5 +1,4 @@
-
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Edit2, Trash2, Search, Tag, Plus, X, Check, CornerDownRight, Layers } from 'lucide-react';
 
@@ -60,6 +59,18 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     ).sort((a, b) => a.name.localeCompare(b.name));
   }, [searchQuery]);
 
+  // Hook para bloquear/desbloquear el scroll automáticamente
+  useEffect(() => {
+    if (activeManagerCat) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [activeManagerCat]);
+
   const openManager = (cat: CategoryItem, startWithForm = false) => {
     setActiveManagerCat(cat);
     if (startWithForm) {
@@ -69,7 +80,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     } else {
       setManagerView('list');
     }
-    document.body.style.overflow = 'hidden';
+    // Eliminamos la manipulación manual del body aquí
   };
 
   const closeManager = () => {
@@ -77,7 +88,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     setManagerView('list');
     setEditingSub(null);
     setSubNameInput('');
-    document.body.style.overflow = 'unset';
+    // Eliminamos la manipulación manual del body aquí
   };
 
   const handleSubSubmit = () => {

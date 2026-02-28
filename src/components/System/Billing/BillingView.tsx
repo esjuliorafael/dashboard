@@ -1,6 +1,6 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, Info, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText } from 'lucide-react';
+import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText } from 'lucide-react';
 
 export interface BillingViewRef {
   handleSaveConfig: () => void;
@@ -8,6 +8,7 @@ export interface BillingViewRef {
 
 interface BillingViewProps {
   showToast: (message: string, type?: 'success' | 'error') => void;
+  setConfirmDialog: (dialog: any) => void;
 }
 
 interface ExtraCharge {
@@ -30,9 +31,8 @@ interface AnnualService {
 }
 
 export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
-  ({ showToast }, ref) => {
+  ({ showToast, setConfirmDialog }, ref) => {
     
-    // Estado dinámico para los servicios fijos (Ahora escalable a futuro)
     const [services, setServices] = useState<AnnualService[]>([
       {
         id: 'srv-domain', concept: 'Dominio (rancholastrojes.com.mx)', description: '',
@@ -43,24 +43,26 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
         amount: 3274.59, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'server'
       },
       {
-        id: 'srv-maintenance', concept: 'Administración y Mantenimiento', description: 'Respaldo de bases de datos, actualizaciones de seguridad, monitoreo 24/7 y soporte técnico general.',
-        amount: 3500.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'wrench'
-      },
-      {
         id: 'srv-ssl', concept: 'Certificado de Seguridad SSL', description: 'Cifrado de datos y candado de seguridad obligatorio para pasarelas de pago y confianza del cliente.',
         amount: 350.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'shield'
+      },
+      {
+        id: 'srv-maintenance', concept: 'Administración y Mantenimiento', description: 'Respaldo de bases de datos, actualizaciones de seguridad, monitoreo 24/7 y soporte técnico general.',
+        amount: 3500.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'wrench'
       }
     ]);
 
-    // Estado para los cargos extra
     const [extraCharges, setExtraCharges] = useState<ExtraCharge[]>([
       {
         id: 'dev-1', concept: 'Saldo Pendiente: Desarrollo del Sistema', amount: 10000.00,
         status: 'pending', date: '2025-10-25'
+      },
+      {
+        id: 'dev-google', concept: 'Cuenta de Desarrollador Google Play (Pago Único)', amount: 550.00, 
+        status: 'pending', date: '2025-11-01'
       }
     ]);
 
-    // Estados para Modales
     const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
     const [editingCharge, setEditingCharge] = useState<ExtraCharge | null>(null);
     const [chargeFormData, setChargeFormData] = useState({ concept: '', amount: '' });
@@ -69,13 +71,24 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     const [editingService, setEditingService] = useState<AnnualService | null>(null);
     const [serviceFormData, setServiceFormData] = useState({ concept: '', description: '', amount: '', contractDate: '', dueDate: '' });
 
+    // Bloqueo de scroll cuando algún modal está abierto
+    useEffect(() => {
+      if (isChargeModalOpen || isServiceModalOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }, [isChargeModalOpen, isServiceModalOpen]);
+
     useImperativeHandle(ref, () => ({
       handleSaveConfig: () => {
         showToast('Estado de cuenta y servicios actualizados correctamente', 'success');
       }
     }));
 
-    // --- LÓGICA DE CARGOS EXTRA ---
     const handleOpenChargeModal = (charge?: ExtraCharge) => {
       if (charge) {
         setEditingCharge(charge);
@@ -111,15 +124,24 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     };
 
     const removeCharge = (id: string) => {
-      setExtraCharges(prev => prev.filter(c => c.id !== id));
-      showToast('Cargo eliminado');
+      setConfirmDialog({
+        isOpen: true,
+        title: '¿Eliminar Cargo?',
+        message: 'Esta acción eliminará el cargo de la cuenta permanentemente.',
+        confirmLabel: 'Sí, Eliminar',
+        variant: 'danger',
+        onConfirm: () => {
+          setExtraCharges(prev => prev.filter(c => c.id !== id));
+          showToast('Cargo eliminado');
+          setConfirmDialog({ isOpen: false });
+        }
+      });
     };
 
     const toggleChargeStatus = (id: string) => {
       setExtraCharges(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'pending' ? 'paid' : 'pending' } : c));
     };
 
-    // --- LÓGICA DE SERVICIOS ANUALES ---
     const handleOpenServiceModal = (service?: AnnualService) => {
       if (service) {
         setEditingService(service);
@@ -159,15 +181,24 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     };
 
     const removeService = (id: string) => {
-      setServices(prev => prev.filter(s => s.id !== id));
-      showToast('Servicio eliminado');
+      setConfirmDialog({
+        isOpen: true,
+        title: '¿Eliminar Servicio?',
+        message: 'El servicio será eliminado del plan anual. Esta acción no se puede deshacer.',
+        confirmLabel: 'Sí, Eliminar',
+        variant: 'danger',
+        onConfirm: () => {
+          setServices(prev => prev.filter(s => s.id !== id));
+          showToast('Servicio eliminado');
+          setConfirmDialog({ isOpen: false });
+        }
+      });
     };
 
     const toggleServiceStatus = (id: string) => {
       setServices(prev => prev.map(s => s.id === id ? { ...s, isPaid: !s.isPaid } : s));
     };
 
-    // --- RENDERIZADO DE ICONOS DINÁMICOS ---
     const renderServiceIcon = (type: string, isPaid: boolean) => {
       let IconComponent = Box;
       if (type === 'globe') IconComponent = Globe;
@@ -182,12 +213,10 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       );
     };
 
-    // --- CÁLCULOS Y FORMATEO ---
     const totalPendingFixed = services.filter(s => !s.isPaid).reduce((acc, curr) => acc + curr.amount, 0);
     const totalPendingExtra = extraCharges.filter(c => c.status === 'pending').reduce((acc, curr) => acc + curr.amount, 0);
     const granTotalPending = totalPendingFixed + totalPendingExtra;
 
-    // Cálculo dinámico de la fecha más cercana a vencer
     const unpaidServices = services.filter(s => !s.isPaid && s.dueDate);
     const nextDueDate = unpaidServices.length > 0 
       ? unpaidServices.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0].dueDate 
@@ -202,14 +231,9 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 pb-12">
         
-        {/* Banner de Resumen */}
-        <div className={`p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl text-white transition-all duration-500
-          ${granTotalPending > 0 ? 'bg-stone-900' : 'bg-green-600'}
-        `}>
+        <div className={`p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl text-white transition-all duration-500 ${granTotalPending > 0 ? 'bg-stone-900' : 'bg-green-600'}`}>
           <div className="flex items-center gap-6">
-            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0
-              ${granTotalPending > 0 ? 'bg-stone-800 text-brand-400' : 'bg-green-500 text-white'}
-            `}>
+            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0 ${granTotalPending > 0 ? 'bg-stone-800 text-brand-400' : 'bg-green-500 text-white'}`}>
               {granTotalPending > 0 ? <AlertCircle size={32} /> : <CheckCircle2 size={32} />}
             </div>
             <div>
@@ -229,7 +253,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           )}
         </div>
 
-        {/* Módulo de Servicios Fijos */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
@@ -241,16 +264,10 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                 <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Infraestructura y Mantenimiento del Sistema</p>
               </div>
             </div>
-
-            <button 
-              onClick={() => handleOpenServiceModal()}
-              className="flex items-center justify-center gap-2 bg-stone-50 text-stone-600 px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95"
-            >
-              <Plus size={16} />
-              Añadir Servicio
+            <button onClick={() => handleOpenServiceModal()} className="flex items-center justify-center gap-2 bg-stone-50 text-stone-600 px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95">
+              <Plus size={16} /> Añadir Servicio
             </button>
           </div>
-
           <div className="flex flex-col gap-4">
             {services.map((service) => (
               <div key={service.id} className={`p-6 rounded-[2rem] border transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${service.isPaid ? 'bg-stone-50 border-stone-100' : 'bg-white border-brand-200 shadow-sm'}`}>
@@ -258,11 +275,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   {renderServiceIcon(service.iconType, service.isPaid)}
                   <div>
                     <h4 className={`font-bold ${service.isPaid ? 'text-stone-500' : 'text-stone-800'}`}>{service.concept}</h4>
-                    {service.description && (
-                      <p className="text-xs font-medium text-stone-500 mt-1.5 leading-relaxed max-w-md">
-                        {service.description}
-                      </p>
-                    )}
+                    {service.description && <p className="text-xs font-medium text-stone-500 mt-1.5 leading-relaxed max-w-md">{service.description}</p>}
                     {(service.contractDate || service.dueDate) && (
                       <div className="flex flex-wrap items-center gap-3 mt-1.5">
                         {service.contractDate && <span className="text-xs font-medium text-stone-500 flex items-center gap-1.5"><CalendarIcon size={14} /> Contratado: {formatDate(service.contractDate)}</span>}
@@ -278,12 +291,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                     <p className={`text-xl font-black ${service.isPaid ? 'text-stone-400' : 'text-stone-800'}`}>${service.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => toggleServiceStatus(service.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-                    >
-                      {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
-                    </button>
+                    <button onClick={() => toggleServiceStatus(service.id)} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}>{service.isPaid ? 'Pagado' : 'Marcar Pagado'}</button>
                     <button onClick={() => handleOpenServiceModal(service)} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
                     <button onClick={() => removeService(service.id)} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
                   </div>
@@ -293,7 +301,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         </div>
 
-        {/* Módulo de Cargos Adicionales */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
@@ -305,46 +312,28 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                 <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Saldos pendientes, desarrollo o extras</p>
               </div>
             </div>
-
-            <button 
-              onClick={() => handleOpenChargeModal()}
-              className="flex items-center justify-center gap-2 bg-stone-900 text-white px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-800 transition-all active:scale-95"
-            >
-              <Plus size={16} />
-              Añadir Cargo
+            <button onClick={() => handleOpenChargeModal()} className="flex items-center justify-center gap-2 bg-stone-900 text-white px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-800 transition-all active:scale-95">
+              <Plus size={16} /> Añadir Cargo
             </button>
           </div>
-
           <div className="flex flex-col gap-4">
             {extraCharges.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm font-bold text-stone-400">No hay cargos adicionales registrados.</p>
-              </div>
+              <div className="text-center py-8"><p className="text-sm font-bold text-stone-400">No hay cargos adicionales registrados.</p></div>
             ) : (
               extraCharges.map((charge) => (
                 <div key={charge.id} className={`p-5 rounded-[2rem] border transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${charge.status === 'paid' ? 'bg-stone-50 border-stone-100' : 'bg-white border-stone-200 shadow-sm'}`}>
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
-                      <Receipt size={18} />
-                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0"><Receipt size={18} /></div>
                     <div>
                       <h4 className={`font-bold ${charge.status === 'paid' ? 'text-stone-500 line-through' : 'text-stone-800'}`}>{charge.concept}</h4>
                       <p className="text-[10px] font-bold text-stone-400 uppercase mt-0.5">Añadido el: {formatDate(charge.date)}</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-4 md:ml-auto w-full md:w-auto">
-                    <p className={`text-lg font-black ${charge.status === 'paid' ? 'text-stone-400' : 'text-stone-800'}`}>
-                      ${charge.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                    </p>
+                    <p className={`text-lg font-black ${charge.status === 'paid' ? 'text-stone-400' : 'text-stone-800'}`}>${charge.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
                     <div className="w-px h-8 bg-stone-200 mx-2 hidden md:block"></div>
                     <div className="flex items-center gap-2 ml-auto md:ml-0">
-                      <button 
-                        onClick={() => toggleChargeStatus(charge.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-                      >
-                        {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
-                      </button>
+                      <button onClick={() => toggleChargeStatus(charge.id)} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}>{charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}</button>
                       <button onClick={() => handleOpenChargeModal(charge)} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
                       <button onClick={() => removeCharge(charge.id)} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
                     </div>
@@ -355,19 +344,17 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         </div>
 
-        {/* Modal: Servicio Anual */}
         {isServiceModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsServiceModalOpen(false)} />
-            <div className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
               <div className="p-8 sm:p-10">
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-black text-stone-800 tracking-tight">
-                    {editingService ? 'Editar Servicio' : 'Nuevo Servicio Anual'}
-                  </h3>
-                  <button onClick={() => setIsServiceModalOpen(false)} className="text-stone-400 hover:text-stone-600 transition-colors"><X size={24} /></button>
+                  <h3 className="text-2xl font-black text-stone-800 tracking-tight">{editingService ? 'Editar Servicio' : 'Nuevo Servicio Anual'}</h3>
+                  <button onClick={() => setIsServiceModalOpen(false)} className="p-3 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveService} className="space-y-6">
+                  {/* Formulario de Servicios */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Servicio</label>
@@ -413,19 +400,17 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         , document.body)}
 
-        {/* Modal: Cargo Extra */}
         {isChargeModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsChargeModalOpen(false)} />
-            <div className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
               <div className="p-8 sm:p-10">
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-black text-stone-800 tracking-tight">
-                    {editingCharge ? 'Editar Cargo' : 'Nuevo Cargo'}
-                  </h3>
-                  <button onClick={() => setIsChargeModalOpen(false)} className="text-stone-400 hover:text-stone-600 transition-colors"><X size={24} /></button>
+                  <h3 className="text-2xl font-black text-stone-800 tracking-tight">{editingCharge ? 'Editar Cargo' : 'Nuevo Cargo'}</h3>
+                  <button onClick={() => setIsChargeModalOpen(false)} className="p-3 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveCharge} className="space-y-6">
+                  {/* Formulario de Cargos */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Cargo</label>
@@ -453,7 +438,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
             </div>
           </div>
         , document.body)}
-
       </div>
     );
   }
