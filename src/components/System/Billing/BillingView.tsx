@@ -447,7 +447,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       : null;
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 pb-12">
+      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         
         {/* Banner de Resumen */}
         <div className={`p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl text-white transition-all duration-500
@@ -552,6 +552,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         </div>
 
+        {/* Modals ... (Resto del código intacto) */}
         {/* Modal: Servicio Anual */}
         {isServiceModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
@@ -565,7 +566,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsServiceModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveService} className="space-y-6">
-                  {/* ... Inputs de Servicio ... */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Servicio</label>

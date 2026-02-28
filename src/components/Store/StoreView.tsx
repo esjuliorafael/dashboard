@@ -16,60 +16,16 @@ interface StoreViewProps {
 const ITEMS_PER_PAGE = 8;
 
 const mockProducts: Product[] = [
-  { 
-    id: 'p1', name: 'Semental Kelso Fino', price: 15000, status: 'available', type: 'ave', 
-    ringNumber: 'KL-001', age: 'gallo', purpose: 'combate', description: 'Ejemplar con excelente genética y temperamento, ideal para semental de primera línea en cualquier criadero de alto nivel.',
-    imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-25T14:00:00Z'
-  },
-  { 
-    id: 'p2', name: 'Montura de Gala Bordada', price: 8500, status: 'available', type: 'articulo', 
-    stock: 2, description: 'Trabajo artesanal en cuero con bordados de pita realizados a mano por maestros talabarteros de la región.',
-    imageUrl: 'https://images.unsplash.com/photo-1621644026330-89196395f87b?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-25T13:00:00Z'
-  },
-  { 
-    id: 'p3', name: 'Gallina Hatch Reproductora', price: 12000, status: 'reserved', type: 'ave', 
-    ringNumber: 'HT-054', age: 'gallina', purpose: 'cria', description: 'Madre probada para cría de alta calidad con descendencia ganadora en múltiples derbys nacionales.',
-    imageUrl: 'https://images.unsplash.com/photo-1612170153139-6f881ff06700?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-25T12:00:00Z'
-  },
-  { 
-    id: 'p4', name: 'Gallo Radio Giro', price: 9500, status: 'available', type: 'ave', 
-    ringNumber: 'RD-088', age: 'gallo', purpose: 'combate', description: 'Giro de gran velocidad y corte.',
-    imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-24T10:00:00Z'
-  },
-  { 
-    id: 'p5', name: 'Pollo Sweater Fino', price: 4500, status: 'available', type: 'ave', 
-    ringNumber: 'SW-991', age: 'pollo', purpose: 'cria', description: 'Pollo de 8 meses con excelente estampa.',
-    imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-23T11:00:00Z'
-  },
-  { 
-    id: 'p6', name: 'Botas Vaqueras Exóticas', price: 3200, status: 'available', type: 'articulo', 
-    stock: 5, description: 'Botas de piel genuina con acabados premium.',
-    imageUrl: 'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-22T09:00:00Z'
-  },
-  { 
-    id: 'p7', name: 'Gallo Hatch Leiper', price: 11000, status: 'sold', type: 'ave', 
-    ringNumber: 'LP-332', age: 'gallo', purpose: 'combate', description: 'Ejemplar ganador de derby regional.',
-    imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-21T15:00:00Z'
-  },
-  { 
-    id: 'p8', name: 'Espuelas de Acero', price: 1800, status: 'available', type: 'articulo', 
-    stock: 10, description: 'Espuelas forjadas a mano de alta resistencia.',
-    imageUrl: 'https://images.unsplash.com/photo-1621644026330-89196395f87b?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-20T08:00:00Z'
-  },
-  { 
-    id: 'p9', name: 'Gallina Kelso Pura', price: 8000, status: 'available', type: 'ave', 
-    ringNumber: 'KL-002', age: 'gallina', purpose: 'cria', description: 'Madre de campeones.',
-    imageUrl: 'https://images.unsplash.com/photo-1612170153139-6f881ff06700?auto=format&fit=crop&q=80&w=800', 
-    gallery: [], createdAt: '2023-10-19T14:00:00Z'
-  }
+  // ... (Data mock intacta)
+  { id: 'p1', name: 'Semental Kelso Fino', price: 15000, status: 'available', type: 'ave', ringNumber: 'KL-001', age: 'gallo', purpose: 'combate', description: 'Ejemplar con excelente genética y temperamento, ideal para semental de primera línea en cualquier criadero de alto nivel.', imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-25T14:00:00Z' },
+  { id: 'p2', name: 'Montura de Gala Bordada', price: 8500, status: 'available', type: 'articulo', stock: 2, description: 'Trabajo artesanal en cuero con bordados de pita realizados a mano por maestros talabarteros de la región.', imageUrl: 'https://images.unsplash.com/photo-1621644026330-89196395f87b?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-25T13:00:00Z' },
+  { id: 'p3', name: 'Gallina Hatch Reproductora', price: 12000, status: 'reserved', type: 'ave', ringNumber: 'HT-054', age: 'gallina', purpose: 'cria', description: 'Madre probada para cría de alta calidad con descendencia ganadora en múltiples derbys nacionales.', imageUrl: 'https://images.unsplash.com/photo-1612170153139-6f881ff06700?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-25T12:00:00Z' },
+  { id: 'p4', name: 'Gallo Radio Giro', price: 9500, status: 'available', type: 'ave', ringNumber: 'RD-088', age: 'gallo', purpose: 'combate', description: 'Giro de gran velocidad y corte.', imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-24T10:00:00Z' },
+  { id: 'p5', name: 'Pollo Sweater Fino', price: 4500, status: 'available', type: 'ave', ringNumber: 'SW-991', age: 'pollo', purpose: 'cria', description: 'Pollo de 8 meses con excelente estampa.', imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-23T11:00:00Z' },
+  { id: 'p6', name: 'Botas Vaqueras Exóticas', price: 3200, status: 'available', type: 'articulo', stock: 5, description: 'Botas de piel genuina con acabados premium.', imageUrl: 'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-22T09:00:00Z' },
+  { id: 'p7', name: 'Gallo Hatch Leiper', price: 11000, status: 'sold', type: 'ave', ringNumber: 'LP-332', age: 'gallo', purpose: 'combate', description: 'Ejemplar ganador de derby regional.', imageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-21T15:00:00Z' },
+  { id: 'p8', name: 'Espuelas de Acero', price: 1800, status: 'available', type: 'articulo', stock: 10, description: 'Espuelas forjadas a mano de alta resistencia.', imageUrl: 'https://images.unsplash.com/photo-1621644026330-89196395f87b?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-20T08:00:00Z' },
+  { id: 'p9', name: 'Gallina Kelso Pura', price: 8000, status: 'available', type: 'ave', ringNumber: 'KL-002', age: 'gallina', purpose: 'cria', description: 'Madre de campeones.', imageUrl: 'https://images.unsplash.com/photo-1612170153139-6f881ff06700?auto=format&fit=crop&q=80&w=800', gallery: [], createdAt: '2023-10-19T14:00:00Z' }
 ];
 
 export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'list', onSetViewMode, showToast, setConfirmDialog, onValidationChange }) => {
@@ -134,7 +90,7 @@ export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'l
   }
 
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20" ref={storeTopRef}>
+    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700" ref={storeTopRef}>
       
       {filtered.length > 0 ? (
         <div className="flex flex-col gap-4 max-w-6xl mx-auto">
@@ -150,7 +106,7 @@ export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'l
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center pt-8 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center justify-center pt-8 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}

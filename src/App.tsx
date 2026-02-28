@@ -29,9 +29,9 @@ const initialOrders: Order[] = [
   { 
     id: 'ORD-001', 
     customer: 'Maria González', 
-    customerPhone: '555-0123',
-    customerState: 'Jalisco',
-    customerAddress: 'Av. Vallarta 1234, Col. Americana, Guadalajara',
+    customerPhone: '555-0123', 
+    customerState: 'Jalisco', 
+    customerAddress: 'Av. Vallarta 1234, Col. Americana, Guadalajara', 
     items: [
       { id: 'item-1', name: 'Gallo de Combate Kelso', type: 'ave', price: 800, quantity: 1 },
       { id: 'item-2', name: 'Alimento Premium 20kg', type: 'articulo', price: 450, quantity: 1 }
@@ -43,9 +43,9 @@ const initialOrders: Order[] = [
   { 
     id: 'ORD-002', 
     customer: 'Juan Perez', 
-    customerPhone: '555-4567',
-    customerState: 'Querétaro',
-    customerAddress: 'Calle Corregidora 56, Centro, Querétaro',
+    customerPhone: '555-4567', 
+    customerState: 'Querétaro', 
+    customerAddress: 'Calle Corregidora 56, Centro, Querétaro', 
     items: [
       { id: 'item-3', name: 'Polla de Cría Hatch', type: 'ave', price: 850, quantity: 1 }
     ],
@@ -56,9 +56,9 @@ const initialOrders: Order[] = [
   { 
     id: 'ORD-003', 
     customer: 'Ana López', 
-    customerPhone: '555-8901',
-    customerState: 'Nuevo León',
-    customerAddress: 'Paseo de los Leones 789, Cumbres, Monterrey',
+    customerPhone: '555-8901', 
+    customerState: 'Nuevo León', 
+    customerAddress: 'Paseo de los Leones 789, Cumbres, Monterrey', 
     items: [
       { id: 'item-4', name: 'Kit Básico Rancho', type: 'articulo', price: 3200, quantity: 1 }
     ],
@@ -69,9 +69,9 @@ const initialOrders: Order[] = [
   { 
     id: 'ORD-004', 
     customer: 'Carlos Ruiz', 
-    customerPhone: '555-2345',
-    customerState: 'Veracruz',
-    customerAddress: 'Av. Independencia 432, Centro, Veracruz',
+    customerPhone: '555-2345', 
+    customerState: 'Veracruz', 
+    customerAddress: 'Av. Independencia 432, Centro, Veracruz', 
     items: [
       { id: 'item-5', name: 'Accesorio de Cuero', type: 'articulo', price: 450, quantity: 1 }
     ],
@@ -82,9 +82,9 @@ const initialOrders: Order[] = [
   { 
     id: 'ORD-005', 
     customer: 'Sofía Díaz', 
-    customerPhone: '555-6789',
-    customerState: 'Yucatán',
-    customerAddress: 'Calle 60 #456, Centro, Mérida',
+    customerPhone: '555-6789', 
+    customerState: 'Yucatán', 
+    customerAddress: 'Calle 60 #456, Centro, Mérida', 
     items: [
       { id: 'item-6', name: 'Set de Regalo', type: 'articulo', price: 1800, quantity: 1 }
     ],
@@ -368,7 +368,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24 md:pb-10 text-stone-900">
+    // ACTUALIZADO: pb-32 para dar aire suficiente en móvil, md:pb-10 en desktop
+    <div className="min-h-screen bg-[#f3f4f6] font-sans pb-32 md:pb-10 text-stone-900">
       <Header activeTab={activeTab} setActiveTab={(tab) => {
         setActiveTab(tab);
         setSearchQuery('');
@@ -799,7 +800,7 @@ function App() {
                   <UsersView 
                     ref={usersRef} 
                     showToast={showToast}
-                    setConfirmDialog={setConfirmDialog} // <-- Pasamos el modal
+                    setConfirmDialog={setConfirmDialog}
                   />
                 ) : systemViewMode === 'identity' ? (
                   <IdentityView 
@@ -837,7 +838,7 @@ function App() {
                   <BillingView 
                     ref={billingRef} 
                     showToast={showToast}
-                    setConfirmDialog={setConfirmDialog} // <-- Pasamos el modal
+                    setConfirmDialog={setConfirmDialog}
                   />
                 ) : (
                   <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-white/60 text-center">

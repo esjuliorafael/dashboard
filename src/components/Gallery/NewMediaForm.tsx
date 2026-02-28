@@ -121,7 +121,7 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
   }, [previewUrl, initialData]);
 
   return (
-    <form id="media-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
+    <form id="media-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
       
       <div className="flex-1">
         <div 
@@ -227,7 +227,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              {/* CORRECCIÓN: inset-y-0 y flex items-center */}
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
                 <ChevronDown size={18} />
               </div>
@@ -248,7 +247,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                     <option key={sub} value={sub}>{sub}</option>
                   ))}
                 </select>
-                {/* CORRECCIÓN: inset-y-0 y flex items-center */}
                 <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-stone-400">
                   <FileType size={18} />
                 </div>
@@ -266,7 +264,6 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full bg-stone-50 border border-stone-100 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               />
-              {/* CORRECCIÓN: inset-y-0 y flex items-center */}
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-400">
                 <MapPin size={18} />
               </div>

@@ -22,12 +22,10 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const ordersTopRef = useRef<HTMLDivElement>(null);
 
-  // Reiniciar a página 1 si cambia el filtro de órdenes (búsqueda)
   useEffect(() => {
     setCurrentPage(1);
   }, [orders]);
 
-  // Cálculos de Paginación
   const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
   
   const paginatedOrders = useMemo(() => {
@@ -38,12 +36,11 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber === currentPage) return;
     setCurrentPage(pageNumber);
-    // Scroll suave al inicio de la lista
     ordersTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <div className="w-full pb-20" ref={ordersTopRef}>
+    <div className="w-full" ref={ordersTopRef}>
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {paginatedOrders.map((order, idx) => (
           <div 
@@ -73,7 +70,6 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         )}
       </div>
 
-      {/* Controles de Paginación (Homologados con Galería y Tienda) */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center pt-8 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">

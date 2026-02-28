@@ -59,7 +59,6 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     ).sort((a, b) => a.name.localeCompare(b.name));
   }, [searchQuery]);
 
-  // CORRECCIÓN: Usamos classList para consistencia
   useEffect(() => {
     if (activeManagerCat) {
       document.body.classList.add('overflow-hidden');
@@ -125,7 +124,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
   };
 
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
+    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
+      {/* Grid of Main Categories */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filtered.map((cat, idx) => (

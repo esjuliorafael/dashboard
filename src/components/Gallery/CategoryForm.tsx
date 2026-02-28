@@ -18,12 +18,10 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
     }
   }, [initialData]);
 
-  // Avisamos a App.tsx cada vez que cambia el texto para activar/desactivar la píldora
   useEffect(() => {
     onValidationChange?.(name.trim().length > 0);
   }, [name, onValidationChange]);
 
-  // Limpiamos la píldora si se desmonta el componente
   useEffect(() => {
     return () => onValidationChange?.(false);
   }, [onValidationChange]);
@@ -40,7 +38,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
   };
 
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
+    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-white/60 overflow-hidden">
         <div className="p-8 sm:p-10">
           
@@ -63,7 +61,6 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
               )}
             </div>
 
-            {/* Mostramos el bloque informativo solo cuando estamos creando una categoría nueva */}
             {!initialData && (
               <div className="bg-stone-50/80 p-6 rounded-[2rem] border border-stone-100 flex items-start gap-5">
                 <div className="p-3 bg-white rounded-2xl text-stone-400 shadow-sm shrink-0">
@@ -78,7 +75,6 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
               </div>
             )}
 
-            {/* BOTÓN OCULTO: Permite enviar el formulario desde App.tsx o presionando la tecla "Enter" */}
             <button type="submit" className="hidden" disabled={!name.trim() || isSubmitting} />
 
           </form>

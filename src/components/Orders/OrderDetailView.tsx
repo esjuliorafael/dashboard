@@ -50,7 +50,7 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
   const hasArticles = order.items.some(item => item.type === 'articulo');
 
   return (
-    <div className="animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
+    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       {/* Header */}
       <div className="flex items-center justify-end mb-8">
         

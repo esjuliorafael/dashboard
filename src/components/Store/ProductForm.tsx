@@ -72,7 +72,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
   };
 
   return (
-    <form id="product-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-12">
+    <form id="product-form" onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
       
       {/* Left Column: Cover & Gallery */}
       <div className="flex-1 space-y-6">
@@ -83,9 +83,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
           `}
         >
           {!coverUrl ? (
-            // Agregamos la clase 'group' aquí
             <div className="flex flex-col items-center p-10 text-center group">
-              {/* Agregamos las clases de animación (group-hover:scale-110 transition-transform duration-300) aquí */}
               <div className="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <ImageIcon size={32} />
               </div>

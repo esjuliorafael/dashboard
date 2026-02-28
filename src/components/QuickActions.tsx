@@ -43,16 +43,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
     },
     {
       group: 'Sistema',
+      // ORDEN REORGANIZADO POR PRIORIDAD: Admin -> Finanzas -> Logística -> Coms -> Mantenimiento
       items: [
-        { icon: <PenTool size={20} />, label: 'Añadir Logo' },
-        { icon: <CreditCard size={20} />, label: 'Método de Pago' },
-        { icon: <MessageCircle size={20} />, label: 'WhatsApp' },
-        { icon: <Truck size={20} />, label: 'Configurar Envíos' },
-        { icon: <Timer size={20} />, label: 'Lib. Inventario' },
-        { icon: <Bell size={20} />, label: 'Notificaciones' },
         { icon: <Receipt size={20} />, label: 'Estado de Cuenta' },
         { icon: <Users size={20} />, label: 'Usuarios' },
-        { icon: <Settings size={20} />, label: 'Config' },
+        { icon: <CreditCard size={20} />, label: 'Método de Pago' },
+        { icon: <Truck size={20} />, label: 'Configurar Envíos' },
+        { icon: <MessageCircle size={20} />, label: 'WhatsApp' },
+        { icon: <Bell size={20} />, label: 'Notificaciones' },
+        { icon: <Timer size={20} />, label: 'Lib. Inventario' },
+        { icon: <PenTool size={20} />, label: 'Añadir Logo' },
       ]
     }
   ];

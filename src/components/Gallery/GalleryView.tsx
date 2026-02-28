@@ -18,6 +18,7 @@ interface GalleryViewProps {
 const ITEMS_PER_PAGE = 12;
 
 const galleryMedia: Media[] = [
+  // ... (Data mock intacta)
   { id: '1', title: 'Atardecer en el Rancho', description: 'Vista panorámica de las trojes principales bajo un cielo rojizo.', type: 'image', category: 'Paisajes', subcategory: 'Atardeceres', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=800', likes: 42, isFavorite: true, createdAt: '2023-10-25T14:00:00Z' },
   { id: '2', title: 'Producción de Mezcal', description: 'El proceso ancestral de destilación en nuestra molienda propia.', type: 'video', category: 'Cultura', subcategory: 'Tradiciones', url: 'https://images.unsplash.com/photo-1599839624912-6718879583d2?auto=format&fit=crop&q=80&w=800', likes: 128, isFavorite: false, createdAt: '2023-10-25T13:00:00Z' },
   { id: '3', title: 'Ganado Angus Premium', description: 'Nuestros mejores ejemplares listos para la exhibición nacional.', type: 'image', category: 'Ganado', subcategory: 'Angus', url: 'https://images.unsplash.com/photo-1547491719-2f99696c3329?auto=format&fit=crop&q=80&w=800', likes: 85, isFavorite: false, createdAt: '2023-10-25T12:00:00Z' },
@@ -237,7 +238,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-8 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex items-center justify-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">
             <button
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
