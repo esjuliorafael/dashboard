@@ -1,6 +1,6 @@
-import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText } from 'lucide-react';
+import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText, Edit2 } from 'lucide-react';
 
 export interface BillingViewRef {
   handleSaveConfig: () => void;
@@ -30,66 +30,272 @@ interface AnnualService {
   iconType: 'globe' | 'server' | 'wrench' | 'shield' | 'default';
 }
 
+// --- UTILIDADES ---
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+const RenderServiceIcon = ({ type, isPaid }: { type: string, isPaid: boolean }) => {
+  let IconComponent = Box;
+  if (type === 'globe') IconComponent = Globe;
+  if (type === 'server') IconComponent = Server;
+  if (type === 'wrench') IconComponent = Wrench;
+  if (type === 'shield') IconComponent = ShieldCheck;
+  
+  return (
+    <div className={`p-3 rounded-2xl flex-shrink-0 ${isPaid ? 'bg-stone-200 text-stone-500' : 'bg-brand-50 text-brand-500'}`}>
+      <IconComponent size={24} />
+    </div>
+  );
+};
+
+// --- COMPONENTES SWIPEABLES ---
+
+interface SwipeableCardProps {
+  children: React.ReactNode;
+  onEdit: () => void;
+  onDelete: () => void;
+  className?: string;
+}
+
+const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
+  children, 
+  onEdit, 
+  onDelete, 
+  className 
+}) => {
+  const [translateX, setTranslateX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [activeSide, setActiveSide] = useState<'none' | 'left' | 'right'>('none');
+  
+  const touchStart = useRef(0);
+  const touchX = useRef(0);
+  
+  const SWIPE_THRESHOLD = 80;
+  const ACTION_WIDTH = 100;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+    touchX.current = touchStart.current;
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStart.current;
+    
+    let finalTranslate = diff;
+    if (activeSide === 'left') finalTranslate = ACTION_WIDTH + diff;
+    if (activeSide === 'right') finalTranslate = -ACTION_WIDTH + diff;
+
+    setTranslateX(finalTranslate);
+    touchX.current = currentX;
+  };
+
+  const handleTouchEnd = () => {
+    setIsSwiping(false);
+    const diff = touchX.current - touchStart.current;
+    
+    if (diff > SWIPE_THRESHOLD && activeSide !== 'right') {
+      setTranslateX(ACTION_WIDTH);
+      setActiveSide('left');
+    } else if (diff < -SWIPE_THRESHOLD && activeSide !== 'left') {
+      setTranslateX(-ACTION_WIDTH);
+      setActiveSide('right');
+    } else {
+      setTranslateX(0);
+      setActiveSide('none');
+    }
+  };
+
+  const resetSwipe = () => {
+    setTranslateX(0);
+    setActiveSide('none');
+  };
+
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* Background Actions (Mobile) */}
+      <div className="absolute inset-0 flex sm:hidden">
+        <button 
+          onClick={() => { onEdit(); resetSwipe(); }}
+          className={`absolute inset-y-0 left-0 w-[100px] bg-brand-500 text-white flex flex-col items-center justify-center gap-1 transition-opacity ${translateX > 0 ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <Edit2 size={20} strokeWidth={2.5} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Editar</span>
+        </button>
+        <button 
+          onClick={() => { onDelete(); resetSwipe(); }}
+          className={`absolute inset-y-0 right-0 w-[100px] bg-rose-500 text-white flex flex-col items-center justify-center gap-1 transition-opacity ${translateX < 0 ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <Trash2 size={20} strokeWidth={2.5} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Eliminar</span>
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div 
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ 
+          transform: `translateX(${translateX}px)`,
+          transition: isSwiping ? 'none' : 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        }}
+        className="relative z-10 bg-white h-full"
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTE SERVICIO (CARD) ---
+interface ServiceCardProps {
+  service: AnnualService;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleStatus: () => void;
+}
+
+const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, onToggleStatus }) => {
+  return (
+    <SwipeableCard 
+      onEdit={onEdit} 
+      onDelete={onDelete}
+      className={`rounded-[2rem] border transition-all duration-300 shadow-sm ${service.isPaid ? 'bg-stone-50 border-stone-100' : 'bg-white border-brand-200'}`}
+    >
+      <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 h-full">
+        <div className="flex-1">
+          <div className="flex items-center gap-4">
+            <RenderServiceIcon type={service.iconType} isPaid={service.isPaid} />
+            <h4 className={`font-bold text-lg ${service.isPaid ? 'text-stone-500' : 'text-stone-800'}`}>
+              {service.concept}
+            </h4>
+          </div>
+          <div className="mt-3 space-y-3 pl-1 sm:pl-0">
+            {service.description && (
+              <p className="text-xs font-medium text-stone-500 leading-relaxed max-w-xl">
+                {service.description}
+              </p>
+            )}
+            {(service.contractDate || service.dueDate) && (
+              <div className="flex flex-wrap items-center gap-3">
+                {service.contractDate && <span className="text-xs font-medium text-stone-500 flex items-center gap-1.5"><CalendarIcon size={14} /> Contratado: {formatDate(service.contractDate)}</span>}
+                {service.dueDate && <span className="text-xs font-medium text-stone-500 flex items-center gap-1.5"><CalendarIcon size={14} /> Vence: {formatDate(service.dueDate)}</span>}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 border-stone-100 pt-4 md:pt-0">
+          <div className="text-left md:text-right">
+            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Renovación</p>
+            <p className={`text-xl font-black ${service.isPaid ? 'text-stone-400' : 'text-stone-800'}`}>${service.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+            >
+              {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
+            </button>
+            {/* Desktop Actions (Hidden on Mobile) */}
+            <div className="hidden sm:flex gap-2">
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </SwipeableCard>
+  );
+};
+
+// --- COMPONENTE CARGO (CARD) ---
+interface ChargeCardProps {
+  charge: ExtraCharge;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleStatus: () => void;
+}
+
+const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onToggleStatus }) => {
+  return (
+    <SwipeableCard 
+      onEdit={onEdit} 
+      onDelete={onDelete}
+      className={`rounded-[2rem] border transition-all duration-300 shadow-sm ${charge.status === 'paid' ? 'bg-stone-50 border-stone-100' : 'bg-white border-stone-200'}`}
+    >
+      <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 h-full">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
+            <Receipt size={18} />
+          </div>
+          <div>
+            <h4 className={`font-bold ${charge.status === 'paid' ? 'text-stone-500 line-through' : 'text-stone-800'}`}>{charge.concept}</h4>
+            <p className="text-[10px] font-bold text-stone-400 uppercase mt-0.5">Añadido el: {formatDate(charge.date)}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4 md:ml-auto w-full md:w-auto">
+          <p className={`text-lg font-black ${charge.status === 'paid' ? 'text-stone-400' : 'text-stone-800'}`}>
+            ${charge.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+          </p>
+          <div className="w-px h-8 bg-stone-200 mx-2 hidden md:block"></div>
+          <div className="flex items-center gap-2 ml-auto md:ml-0">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+            >
+              {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
+            </button>
+            {/* Desktop Actions (Hidden on Mobile) */}
+            <div className="hidden sm:flex gap-2">
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </SwipeableCard>
+  );
+};
+
+// --- VIEW PRINCIPAL ---
 export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
   ({ showToast, setConfirmDialog }, ref) => {
     
     const [services, setServices] = useState<AnnualService[]>([
       {
-        id: 'srv-domain', 
-        concept: 'Dominio (rancholastrojes.com.mx)', 
-        description: '',
-        amount: 727.32, 
-        isPaid: false, 
-        contractDate: '2025-09-17', 
-        dueDate: '2026-09-17', 
-        iconType: 'globe'
+        id: 'srv-domain', concept: 'Dominio (rancholastrojes.com.mx)', description: '',
+        amount: 727.32, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'globe'
       },
       {
-        id: 'srv-hosting', 
-        concept: 'Hosting (Servidor Dedicado)', 
-        description: '',
-        amount: 3274.59, 
-        isPaid: false, 
-        contractDate: '2025-09-17', 
-        dueDate: '2026-09-17', 
-        iconType: 'server'
+        id: 'srv-hosting', concept: 'Hosting (Servidor Dedicado)', description: '',
+        amount: 3274.59, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'server'
       },
       {
-        id: 'srv-ssl', 
-        concept: 'Certificado de Seguridad SSL', 
-        description: 'Cifrado de datos y candado de seguridad obligatorio para pasarelas de pago y confianza del cliente.',
-        amount: 350.00, 
-        isPaid: false, 
-        contractDate: '2025-09-17', 
-        dueDate: '2026-09-17', 
-        iconType: 'shield'
+        id: 'srv-ssl', concept: 'Certificado de Seguridad SSL', description: 'Cifrado de datos y candado de seguridad obligatorio para pasarelas de pago y confianza del cliente.',
+        amount: 350.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'shield'
       },
       {
-        id: 'srv-maintenance', 
-        concept: 'Administración y Mantenimiento', 
-        description: 'Respaldo de bases de datos, actualizaciones de seguridad, monitoreo 24/7 y soporte técnico general.',
-        amount: 3500.00, 
-        isPaid: false, 
-        contractDate: '2025-09-17', 
-        dueDate: '2026-09-17', 
-        iconType: 'wrench'
+        id: 'srv-maintenance', concept: 'Administración y Mantenimiento', description: 'Respaldo de bases de datos, actualizaciones de seguridad, monitoreo 24/7 y soporte técnico general.',
+        amount: 3500.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'wrench'
       }
     ]);
 
     const [extraCharges, setExtraCharges] = useState<ExtraCharge[]>([
       {
-        id: 'dev-1', 
-        concept: 'Saldo Pendiente: Desarrollo del Sistema', 
-        amount: 10000.00,
-        status: 'pending', 
-        date: '2025-10-25'
+        id: 'dev-1', concept: 'Saldo Pendiente: Desarrollo del Sistema', amount: 10000.00,
+        status: 'pending', date: '2025-10-25'
       },
       {
-        id: 'dev-google', 
-        concept: 'Cuenta de Desarrollador Google Play (Pago Único)', 
-        amount: 550.00, 
-        status: 'pending', 
-        date: '2025-11-01'
+        id: 'dev-google', concept: 'Cuenta de Desarrollador Google Play (Pago Único)', amount: 550.00, 
+        status: 'pending', date: '2025-11-01'
       }
     ]);
 
@@ -101,7 +307,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     const [editingService, setEditingService] = useState<AnnualService | null>(null);
     const [serviceFormData, setServiceFormData] = useState({ concept: '', description: '', amount: '', contractDate: '', dueDate: '' });
 
-    // Bloqueo de scroll
     useEffect(() => {
       if (isChargeModalOpen || isServiceModalOpen) {
         document.body.classList.add('overflow-hidden');
@@ -119,7 +324,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       }
     }));
 
-    // --- LOGIC ---
+    // --- HANDLERS DE CARGOS ---
     const handleOpenChargeModal = (charge?: ExtraCharge) => {
       if (charge) {
         setEditingCharge(charge);
@@ -173,6 +378,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       setExtraCharges(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'pending' ? 'paid' : 'pending' } : c));
     };
 
+    // --- HANDLERS DE SERVICIOS ---
     const handleOpenServiceModal = (service?: AnnualService) => {
       if (service) {
         setEditingService(service);
@@ -230,20 +436,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       setServices(prev => prev.map(s => s.id === id ? { ...s, isPaid: !s.isPaid } : s));
     };
 
-    const renderServiceIcon = (type: string, isPaid: boolean) => {
-      let IconComponent = Box;
-      if (type === 'globe') IconComponent = Globe;
-      if (type === 'server') IconComponent = Server;
-      if (type === 'wrench') IconComponent = Wrench;
-      if (type === 'shield') IconComponent = ShieldCheck;
-      
-      return (
-        <div className={`p-3 rounded-2xl flex-shrink-0 ${isPaid ? 'bg-stone-200 text-stone-500' : 'bg-brand-50 text-brand-500'}`}>
-          <IconComponent size={24} />
-        </div>
-      );
-    };
-
+    // Cálculos
     const totalPendingFixed = services.filter(s => !s.isPaid).reduce((acc, curr) => acc + curr.amount, 0);
     const totalPendingExtra = extraCharges.filter(c => c.status === 'pending').reduce((acc, curr) => acc + curr.amount, 0);
     const granTotalPending = totalPendingFixed + totalPendingExtra;
@@ -252,12 +445,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     const nextDueDate = unpaidServices.length > 0 
       ? unpaidServices.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0].dueDate 
       : null;
-
-    const formatDate = (dateStr: string) => {
-      if (!dateStr) return '';
-      const [year, month, day] = dateStr.split('-');
-      return `${day}/${month}/${year}`;
-    };
 
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 pb-12">
@@ -313,56 +500,13 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
 
           <div className="flex flex-col gap-4">
             {services.map((service) => (
-              <div key={service.id} className={`p-6 rounded-[2rem] border transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${service.isPaid ? 'bg-stone-50 border-stone-100' : 'bg-white border-brand-200 shadow-sm'}`}>
-                
-                {/* Contenido Principal (Texto + Icono) */}
-                <div className="flex-1">
-                  
-                  {/* Bloque Superior: Icono y Título */}
-                  <div className="flex items-center gap-4">
-                    {renderServiceIcon(service.iconType, service.isPaid)}
-                    <h4 className={`font-bold text-lg ${service.isPaid ? 'text-stone-500' : 'text-stone-800'}`}>
-                      {service.concept}
-                    </h4>
-                  </div>
-
-                  {/* Bloque Inferior: Descripción y Fechas */}
-                  <div className="mt-3 space-y-3 pl-1 sm:pl-0">
-                    {service.description && (
-                      <p className="text-xs font-medium text-stone-500 leading-relaxed max-w-xl">
-                        {service.description}
-                      </p>
-                    )}
-                    
-                    {(service.contractDate || service.dueDate) && (
-                      <div className="flex flex-wrap items-center gap-3">
-                        {service.contractDate && <span className="text-xs font-medium text-stone-500 flex items-center gap-1.5"><CalendarIcon size={14} /> Contratado: {formatDate(service.contractDate)}</span>}
-                        {/* Se eliminó el separador (punto) aquí */}
-                        {service.dueDate && <span className="text-xs font-medium text-stone-500 flex items-center gap-1.5"><CalendarIcon size={14} /> Vence: {formatDate(service.dueDate)}</span>}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Bloque de Acción (Precio y Botones) */}
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 border-stone-100 pt-4 md:pt-0">
-                  <div className="text-left md:text-right">
-                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Renovación</p>
-                    <p className={`text-xl font-black ${service.isPaid ? 'text-stone-400' : 'text-stone-800'}`}>${service.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => toggleServiceStatus(service.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-                    >
-                      {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
-                    </button>
-                    <button onClick={() => handleOpenServiceModal(service)} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
-                    <button onClick={() => removeService(service.id)} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
-                  </div>
-                </div>
-
-              </div>
+              <ServiceCard 
+                key={service.id}
+                service={service}
+                onEdit={() => handleOpenServiceModal(service)}
+                onDelete={() => removeService(service.id)}
+                onToggleStatus={() => toggleServiceStatus(service.id)}
+              />
             ))}
           </div>
         </div>
@@ -396,34 +540,13 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
               </div>
             ) : (
               extraCharges.map((charge) => (
-                <div key={charge.id} className={`p-5 rounded-[2rem] border transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${charge.status === 'paid' ? 'bg-stone-50 border-stone-100' : 'bg-white border-stone-200 shadow-sm'}`}>
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
-                      <Receipt size={18} />
-                    </div>
-                    <div>
-                      <h4 className={`font-bold ${charge.status === 'paid' ? 'text-stone-500 line-through' : 'text-stone-800'}`}>{charge.concept}</h4>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase mt-0.5">Añadido el: {formatDate(charge.date)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 md:ml-auto w-full md:w-auto">
-                    <p className={`text-lg font-black ${charge.status === 'paid' ? 'text-stone-400' : 'text-stone-800'}`}>
-                      ${charge.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                    </p>
-                    <div className="w-px h-8 bg-stone-200 mx-2 hidden md:block"></div>
-                    <div className="flex items-center gap-2 ml-auto md:ml-0">
-                      <button 
-                        onClick={() => toggleChargeStatus(charge.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-                      >
-                        {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
-                      </button>
-                      <button onClick={() => handleOpenChargeModal(charge)} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
-                      <button onClick={() => removeCharge(charge.id)} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
-                    </div>
-                  </div>
-                </div>
+                <ChargeCard 
+                  key={charge.id}
+                  charge={charge}
+                  onEdit={() => handleOpenChargeModal(charge)}
+                  onDelete={() => removeCharge(charge.id)}
+                  onToggleStatus={() => toggleChargeStatus(charge.id)}
+                />
               ))
             )}
           </div>
@@ -442,6 +565,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsServiceModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveService} className="space-y-6">
+                  {/* ... Inputs de Servicio ... */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Servicio</label>
@@ -500,6 +624,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsChargeModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveCharge} className="space-y-6">
+                  {/* ... Inputs de Cargo ... */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Cargo</label>
