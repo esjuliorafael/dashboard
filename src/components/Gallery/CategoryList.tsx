@@ -59,15 +59,15 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     ).sort((a, b) => a.name.localeCompare(b.name));
   }, [searchQuery]);
 
-  // Hook para bloquear/desbloquear el scroll automáticamente
+  // CORRECCIÓN: Usamos classList para consistencia
   useEffect(() => {
     if (activeManagerCat) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('overflow-hidden');
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('overflow-hidden');
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('overflow-hidden');
     };
   }, [activeManagerCat]);
 
@@ -80,7 +80,6 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     } else {
       setManagerView('list');
     }
-    // Eliminamos la manipulación manual del body aquí
   };
 
   const closeManager = () => {
@@ -88,7 +87,6 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     setManagerView('list');
     setEditingSub(null);
     setSubNameInput('');
-    // Eliminamos la manipulación manual del body aquí
   };
 
   const handleSubSubmit = () => {
@@ -128,7 +126,6 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
-      {/* Grid of Main Categories */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filtered.map((cat, idx) => (

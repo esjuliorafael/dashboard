@@ -33,16 +33,15 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
     fullName: '', email: '', username: '', password: ''
   });
 
-  // Bloqueo de scroll cuando el modal está abierto
+  // CORRECCIÓN: Usamos classList en lugar de style para consistencia con App.tsx
   useEffect(() => {
     if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('overflow-hidden');
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('overflow-hidden');
     }
-    // Cleanup para asegurar que se desbloquee si el componente se desmonta
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('overflow-hidden');
     };
   }, [isModalOpen]);
 
