@@ -96,6 +96,7 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
 
           <div className="space-y-8">
             {channels.map((channel) => (
+              // ESTÁNDAR: rounded-[2.5rem], border-stone-200
               <div key={channel.id} className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6 pb-6 border-b border-stone-100">
                   <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
@@ -108,13 +109,15 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Inputs estandarizados */}
                   <div className="space-y-2 group">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Banco</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                         <Building2 size={18} />
                       </div>
-                      <input type="text" name="bankName" value={channel.bankName} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Ej. BBVA, Santander..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                      <input type="text" name="bankName" value={channel.bankName} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Ej. BBVA, Santander..." 
+                        className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
                   </div>
                   <div className="space-y-2 group">
@@ -123,7 +126,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                         <User size={18} />
                       </div>
-                      <input type="text" name="beneficiary" value={channel.beneficiary} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Nombre del titular" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                      <input type="text" name="beneficiary" value={channel.beneficiary} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="Nombre del titular" 
+                        className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
                   </div>
                   <div className="space-y-2 group">
@@ -132,7 +136,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                         <Hash size={18} />
                       </div>
-                      <input type="text" name="clabe" value={channel.clabe} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="18 dígitos" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                      <input type="text" name="clabe" value={channel.clabe} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="18 dígitos" 
+                        className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
                   </div>
                   <div className="space-y-2 group">
@@ -141,7 +146,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                         <CreditCard size={18} />
                       </div>
-                      <input type="text" name="cardNumber" value={channel.cardNumber} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="16 dígitos" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                      <input type="text" name="cardNumber" value={channel.cardNumber} onChange={(e) => handleChannelChange(channel.id, e)} placeholder="16 dígitos" 
+                        className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                     </div>
                   </div>
                 </div>
@@ -155,6 +161,7 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         
+        {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           <div className="flex items-center gap-3 mb-6 pb-6 border-b border-stone-100">
             <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
@@ -173,7 +180,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                   <Building2 size={18} />
                 </div>
-                <input type="text" name="bankName" value={defaultPayment.bankName} onChange={handleDefaultChange} placeholder="Ej. BBVA, Santander..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                <input type="text" name="bankName" value={defaultPayment.bankName} onChange={handleDefaultChange} placeholder="Ej. BBVA, Santander..." 
+                  className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
               </div>
             </div>
 
@@ -183,7 +191,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                   <User size={18} />
                 </div>
-                <input type="text" name="beneficiary" value={defaultPayment.beneficiary} onChange={handleDefaultChange} placeholder="Titular de la cuenta" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                <input type="text" name="beneficiary" value={defaultPayment.beneficiary} onChange={handleDefaultChange} placeholder="Titular de la cuenta" 
+                  className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
               </div>
             </div>
 
@@ -193,7 +202,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                   <Hash size={18} />
                 </div>
-                <input type="text" name="clabe" value={defaultPayment.clabe} onChange={handleDefaultChange} placeholder="18 dígitos" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                <input type="text" name="clabe" value={defaultPayment.clabe} onChange={handleDefaultChange} placeholder="18 dígitos" 
+                  className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
               </div>
             </div>
 
@@ -203,7 +213,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-stone-400 group-focus-within:text-brand-500 transition-colors">
                   <CreditCard size={18} />
                 </div>
-                <input type="text" name="cardNumber" value={defaultPayment.cardNumber} onChange={handleDefaultChange} placeholder="16 dígitos" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                <input type="text" name="cardNumber" value={defaultPayment.cardNumber} onChange={handleDefaultChange} placeholder="16 dígitos" 
+                  className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
               </div>
             </div>
           </div>
@@ -213,7 +224,8 @@ export const PaymentMethodView = forwardRef<PaymentMethodViewRef, PaymentMethodV
           <div className="flex items-center gap-2 mb-6">
             <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs">Desglose por Departamento</h3>
           </div>
-          <div className="bg-stone-900 p-8 rounded-[3rem] text-white flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl">
+          {/* ESTÁNDAR: rounded-[3rem] (El diseño original tenía 3rem para este bloque oscuro, se ve bien mantenerlo o unificar a 2.5rem. Unifiquemos a 2.5rem para consistencia total) */}
+          <div className="bg-stone-900 p-8 rounded-[2.5rem] text-white flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl">
             <div className="flex items-center gap-6 sm:gap-12">
               <div className="w-16 h-16 rounded-[1.5rem] bg-stone-800 flex items-center justify-center text-stone-400 shrink-0">
                 <Briefcase size={32} />

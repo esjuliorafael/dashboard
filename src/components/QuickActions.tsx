@@ -43,7 +43,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
     },
     {
       group: 'Sistema',
-      // ORDEN REORGANIZADO POR PRIORIDAD: Admin -> Finanzas -> Logística -> Coms -> Mantenimiento
       items: [
         { icon: <Receipt size={20} />, label: 'Estado de Cuenta' },
         { icon: <Users size={20} />, label: 'Usuarios' },
@@ -72,14 +71,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
               <button 
                 key={`${gIndex}-${iIndex}`}
                 onClick={() => onAction?.(action.label)}
-                // MODIFICADO: w-20 h-20 para cuadrado fijo, p-2 para más espacio interno
-                className="flex flex-col items-center justify-center bg-white p-2 rounded-xl shadow-sm border border-stone-100 w-20 h-20 active:scale-95 transition-transform"
-                title={action.label} // Tooltip nativo para ver el nombre completo si se corta
+                // ESTÁNDAR APLICADO: rounded-3xl (más suave), border-stone-200 (más visible)
+                className="flex flex-col items-center justify-center bg-white p-2 rounded-3xl shadow-sm border border-stone-200 w-20 h-20 active:scale-95 transition-transform"
+                title={action.label}
               >
                 <div className="text-stone-600 mb-1.5 bg-stone-50 p-2 rounded-full">
                   {action.icon}
                 </div>
-                {/* MODIFICADO: w-full truncate para cortar texto largo con '...' */}
                 <span className="text-[10px] font-medium text-stone-500 text-center leading-tight w-full truncate px-1">
                   {action.label}
                 </span>
@@ -93,12 +91,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
       <div className="hidden lg:flex flex-col gap-6 sticky top-24">
         {filteredActions.map((group, idx) => (
           <div key={idx} className="group relative">
-            <div className="flex flex-col gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-white/50">
+            {/* ESTÁNDAR APLICADO: rounded-3xl y border-stone-200/50 */}
+            <div className="flex flex-col gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-3xl shadow-sm border border-stone-200/50">
               {group.items.map((item, itemIdx) => (
                 <button 
                   key={itemIdx}
                   onClick={() => onAction?.(item.label)}
-                  className="p-3 rounded-xl text-stone-500 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200 relative group/btn flex items-center justify-center"
+                  // ESTÁNDAR APLICADO: rounded-2xl para los items internos de la lista vertical
+                  className="p-3 rounded-2xl text-stone-500 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200 relative group/btn flex items-center justify-center"
                   aria-label={item.label}
                 >
                   {item.icon}

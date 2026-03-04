@@ -99,8 +99,8 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                 key={state.id}
                 className={`p-5 rounded-[2rem] border transition-all duration-300 flex flex-col justify-between gap-4 ${
                   state.zone === 'normal' 
-                    ? 'bg-white border-white/60 shadow-sm' 
-                    : 'bg-amber-50/30 border-amber-100 shadow-sm'
+                    ? 'bg-white border-stone-200 shadow-sm' 
+                    : 'bg-amber-50/30 border-amber-200 shadow-sm'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -114,7 +114,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                   </span>
                 </div>
                 
-                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+                <div className="flex items-center justify-between pt-2 border-t border-stone-200">
                   <span className="text-xs font-medium text-stone-500">Zona Extendida</span>
                   <button 
                     onClick={() => toggleStateZone(state.id)}
@@ -138,8 +138,10 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Bloque: Envío de Artículos */}
-          <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-100 flex flex-col h-full">
+          {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+          <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-200 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-8">
+              {/* Icono: rounded-2xl */}
               <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
                 <Package size={24} />
               </div>
@@ -161,7 +163,8 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                     value={config.baseCostArticles}
                     disabled={config.freeShippingArticles}
                     onChange={(e) => setConfig({ ...config, baseCostArticles: Number(e.target.value) })}
-                    className="w-full bg-white border-2 border-transparent focus:border-brand-500/20 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
+                    // ESTÁNDAR: Input blanco con borde
+                    className="w-full bg-white border border-stone-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
                   />
                 </div>
                 {config.freeShippingArticles && (
@@ -194,7 +197,8 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
           </section>
 
           {/* Bloque: Envío de Aves */}
-          <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-100 flex flex-col h-full">
+          {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+          <section className="bg-stone-50 p-8 rounded-[2.5rem] border border-stone-200 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-8">
               <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-brand-500">
                 <Bird size={24} />
@@ -218,7 +222,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                       value={config.costNormalZone}
                       disabled={config.freeShippingBirds}
                       onChange={(e) => setConfig({ ...config, costNormalZone: Number(e.target.value) })}
-                      className="w-full bg-white border-2 border-transparent focus:border-brand-500/20 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
+                      className="w-full bg-white border border-stone-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
                     />
                   </div>
                 </div>
@@ -233,7 +237,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
                       value={config.costExtendedZone}
                       disabled={config.freeShippingBirds}
                       onChange={(e) => setConfig({ ...config, costExtendedZone: Number(e.target.value) })}
-                      className="w-full bg-white border-2 border-transparent focus:border-brand-500/20 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
+                      className="w-full bg-white border border-stone-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-10 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm"
                     />
                   </div>
                 </div>
@@ -274,7 +278,7 @@ export const ShippingView = forwardRef<{ handleSaveConfig: () => void; handleSav
             <h3 className="font-black text-stone-800 uppercase tracking-widest text-xs">Resumen de Zonificación</h3>
           </div>
 
-          <div className="bg-stone-900 p-8 rounded-[3rem] text-white flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl">
+          <div className="bg-stone-900 p-8 rounded-[2.5rem] text-white flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl">
             <div className="flex items-center gap-12">
               <div className="text-center sm:text-left">
                 <p className="text-stone-400 text-[10px] font-black uppercase tracking-widest">Zona Normal</p>

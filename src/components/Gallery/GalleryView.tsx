@@ -18,7 +18,6 @@ interface GalleryViewProps {
 const ITEMS_PER_PAGE = 12;
 
 const galleryMedia: Media[] = [
-  // ... (Data mock intacta)
   { id: '1', title: 'Atardecer en el Rancho', description: 'Vista panorámica de las trojes principales bajo un cielo rojizo.', type: 'image', category: 'Paisajes', subcategory: 'Atardeceres', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=800', likes: 42, isFavorite: true, createdAt: '2023-10-25T14:00:00Z' },
   { id: '2', title: 'Producción de Mezcal', description: 'El proceso ancestral de destilación en nuestra molienda propia.', type: 'video', category: 'Cultura', subcategory: 'Tradiciones', url: 'https://images.unsplash.com/photo-1599839624912-6718879583d2?auto=format&fit=crop&q=80&w=800', likes: 128, isFavorite: false, createdAt: '2023-10-25T13:00:00Z' },
   { id: '3', title: 'Ganado Angus Premium', description: 'Nuestros mejores ejemplares listos para la exhibición nacional.', type: 'image', category: 'Ganado', subcategory: 'Angus', url: 'https://images.unsplash.com/photo-1547491719-2f99696c3329?auto=format&fit=crop&q=80&w=800', likes: 85, isFavorite: false, createdAt: '2023-10-25T12:00:00Z' },
@@ -94,6 +93,31 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
     });
   };
 
+  // Función de renderizado modificada para aceptar bandera "isMobile"
+  const renderMediaItem = (item: Media, indexInPage: number, isMobile: boolean) => {
+    // LÓGICA DE INTERCALADO:
+    // Escritorio (3 col): Mantenemos el patrón mixto natural (% 2).
+    // Móvil (2 col): Forzamos el patrón Cuadrado - Alto - Alto - Cuadrado (% 4).
+    const isTall = isMobile 
+      ? (indexInPage % 4 === 1) || (indexInPage % 4 === 2) 
+      : (indexInPage % 2 === 1);
+
+    return (
+      <div 
+        key={item.id} 
+        className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
+        style={{ animationDelay: `${(indexInPage % ITEMS_PER_PAGE) * 40}ms` }}
+      >
+        <MediaCard 
+          media={item} 
+          isTall={isTall} 
+          onEdit={() => handleEditMedia(item)}
+          onDelete={() => handleDeleteMedia(item.id)}
+        />
+      </div>
+    );
+  };
+
   if (viewMode === 'create' || viewMode === 'media_edit') {
     return (
       <NewMediaForm 
@@ -163,24 +187,6 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
     );
   }
 
-  const renderMediaItem = (item: Media, indexInPage: number) => {
-    const isTall = indexInPage % 2 === 1;
-    return (
-      <div 
-        key={item.id} 
-        className="animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-        style={{ animationDelay: `${(indexInPage % ITEMS_PER_PAGE) * 40}ms` }}
-      >
-        <MediaCard 
-          media={item} 
-          isTall={isTall} 
-          onEdit={() => handleEditMedia(item)}
-          onDelete={() => handleDeleteMedia(item.id)}
-        />
-      </div>
-    );
-  };
-
   const columns3 = useMemo(() => {
     const cols: Media[][] = [[], [], []];
     paginatedMedia.forEach((item, i) => {
@@ -199,23 +205,25 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
 
   return (
     <div className="w-full flex flex-col gap-10" ref={galleryTopRef}>
+      {/* Vista Escritorio (3 Columnas) - isMobile = false */}
       <div className="hidden lg:grid grid-cols-3 gap-6 min-h-[500px]">
         {columns3.map((colItems, colIdx) => (
           <div key={`col-3-${colIdx}`} className="flex flex-col gap-6">
             {colItems.map((item) => {
               const originalIndex = paginatedMedia.indexOf(item);
-              return renderMediaItem(item, originalIndex);
+              return renderMediaItem(item, originalIndex, false);
             })}
           </div>
         ))}
       </div>
 
+      {/* Vista Móvil (2 Columnas) - isMobile = true (Activa la lógica alternada) */}
       <div className="grid lg:hidden grid-cols-2 gap-4 sm:gap-6 min-h-[500px]">
         {columns2.map((colItems, colIdx) => (
           <div key={`col-2-${colIdx}`} className="flex flex-col gap-4 sm:gap-6">
             {colItems.map((item) => {
               const originalIndex = paginatedMedia.indexOf(item);
-              return renderMediaItem(item, originalIndex);
+              return renderMediaItem(item, originalIndex, true);
             })}
           </div>
         ))}

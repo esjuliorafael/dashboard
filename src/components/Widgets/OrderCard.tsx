@@ -11,26 +11,26 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     switch (status) {
       case 'paid': 
         return { 
-          color: 'text-green-700 bg-green-50 border-green-100', 
-          icon: <CheckCircle2 size={12} />,
+          style: 'bg-green-500/10 text-green-600 border-green-500/20', 
+          icon: <CheckCircle2 size={12} strokeWidth={2.5} />,
           label: 'Pagado'
         };
       case 'pending': 
         return { 
-          color: 'text-amber-700 bg-amber-50 border-amber-100', 
-          icon: <Clock size={12} />,
+          style: 'bg-amber-500/10 text-amber-600 border-amber-500/20', 
+          icon: <Clock size={12} strokeWidth={2.5} />,
           label: 'Pendiente'
         };
       case 'cancelled': 
         return { 
-          color: 'text-red-700 bg-red-50 border-red-100', 
-          icon: <XCircle size={12} />,
+          style: 'bg-rose-500/10 text-rose-600 border-rose-500/20', 
+          icon: <XCircle size={12} strokeWidth={2.5} />,
           label: 'Cancelado'
         };
       default: 
         return { 
-          color: 'text-gray-600 bg-gray-50', 
-          icon: <Package size={12} />,
+          style: 'bg-stone-100 text-stone-500 border-stone-200', 
+          icon: <Package size={12} strokeWidth={2.5} />,
           label: status 
         };
     }
@@ -39,15 +39,17 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const statusConfig = getStatusConfig(order.status);
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow duration-200 group">
+    // ESTÁNDAR: rounded-3xl (Tarjeta pequeña de widget), border-stone-200
+    <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow duration-200 group">
       {/* Left: Icon & Customer Info */}
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors shrink-0">
-          <Package size={20} />
+        {/* Icon: rounded-2xl */}
+        <div className="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-400 group-hover:bg-brand-50 group-hover:text-brand-500 group-hover:border-brand-100 transition-colors shrink-0">
+          <Package size={20} strokeWidth={1.5} />
         </div>
         <div className="flex flex-col">
-          <h4 className="font-semibold text-stone-800 text-sm leading-tight">{order.customer}</h4>
-          <span className="text-xs text-stone-500 mt-0.5 line-clamp-1">
+          <h4 className="font-bold text-stone-800 text-sm leading-tight">{order.customer}</h4>
+          <span className="text-xs text-stone-400 font-medium mt-0.5 line-clamp-1">
             {order.items.length > 0 
               ? `${order.items[0].name}${order.items.length > 1 ? ` +${order.items.length - 1} más` : ''}`
               : 'Sin productos'}
@@ -56,9 +58,10 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       </div>
       
       {/* Right: Total & Status Stack */}
-      <div className="flex flex-col items-end gap-1">
-        <span className="font-bold text-stone-800 text-sm">${order.total.toLocaleString()}</span>
-        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusConfig.color}`}>
+      <div className="flex flex-col items-end gap-1.5">
+        <span className="font-black text-stone-800 text-sm">${order.total.toLocaleString()}</span>
+        {/* Píldora de estado pequeña */}
+        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${statusConfig.style}`}>
           {statusConfig.icon}
           <span className="capitalize">{statusConfig.label}</span>
         </div>

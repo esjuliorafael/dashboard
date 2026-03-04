@@ -39,7 +39,8 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-white/60 overflow-hidden">
+      {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-stone-200 overflow-hidden">
         <div className="p-8 sm:p-10">
           
           <form id="category-form" onSubmit={handleSubmit} className="space-y-8">
@@ -54,7 +55,8 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
                 value={name}
                 autoFocus
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                // ESTÁNDAR: rounded-2xl, border-stone-200
+                className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               />
               {!name.trim() && (
                 <p className="text-[10px] text-stone-300 font-bold uppercase ml-1 tracking-tighter">Este campo es obligatorio para continuar</p>
@@ -62,7 +64,8 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
             </div>
 
             {!initialData && (
-              <div className="bg-stone-50/80 p-6 rounded-[2rem] border border-stone-100 flex items-start gap-5">
+              // ESTÁNDAR: rounded-[2rem], border-stone-200
+              <div className="bg-stone-50/80 p-6 rounded-[2rem] border border-stone-200 flex items-start gap-5">
                 <div className="p-3 bg-white rounded-2xl text-stone-400 shadow-sm shrink-0">
                   <Info size={20} />
                 </div>

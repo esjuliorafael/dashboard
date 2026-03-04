@@ -12,7 +12,6 @@ interface NotificationSettingsViewProps {
 export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, NotificationSettingsViewProps>(
   ({ showToast }, ref) => {
     
-    // Estado inicial simulando el correo actual del usuario
     const [config, setConfig] = useState({
       active: true,
       email: 'julio@rancholastrojes.com' 
@@ -20,7 +19,6 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
 
     useImperativeHandle(ref, () => ({
       handleSaveConfig: () => {
-        // Validación básica de correo si la opción está activa
         if (config.active && !/^\S+@\S+\.\S+$/.test(config.email)) {
           showToast('Por favor ingresa un correo electrónico válido.', 'error');
           return;
@@ -43,13 +41,14 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
           </div>
         </div>
 
-        {/* Tarjeta Principal Homologada */}
+        {/* Tarjeta Principal Homologada: rounded-[2.5rem], border-stone-200 */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           
           {/* Cabecera con Toggle */}
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
+              {/* Icono: rounded-2xl */}
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600">
                 <Bell size={20} />
               </div>
               <div>
@@ -66,10 +65,8 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
             </button>
           </div>
 
-          {/* Formulario fluido sin anchos máximos */}
           <div className="flex flex-col gap-6 transition-all duration-300" style={{ opacity: config.active ? 1 : 0.5, pointerEvents: config.active ? 'auto' : 'none' }}>
             
-            {/* Input Estandarizado */}
             <div className="space-y-2 group">
               <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">
                 Correo Electrónico de Recepción
@@ -84,7 +81,8 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
                   value={config.email} 
                   onChange={(e) => setConfig({ ...config, email: e.target.value })} 
                   placeholder="ejemplo@correo.com" 
-                  className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" 
+                  // ESTÁNDAR: Input homologado
+                  className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 pr-6 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" 
                 />
               </div>
               <p className="text-[10px] text-stone-400 font-medium ml-1 leading-relaxed">

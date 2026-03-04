@@ -45,6 +45,7 @@ const RenderServiceIcon = ({ type, isPaid }: { type: string, isPaid: boolean }) 
   if (type === 'shield') IconComponent = ShieldCheck;
   
   return (
+    // ESTÁNDAR: rounded-2xl
     <div className={`p-3 rounded-2xl flex-shrink-0 ${isPaid ? 'bg-stone-200 text-stone-500' : 'bg-brand-50 text-brand-500'}`}>
       <IconComponent size={24} />
     </div>
@@ -166,7 +167,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, on
     <SwipeableCard 
       onEdit={onEdit} 
       onDelete={onDelete}
-      className={`rounded-[2rem] border transition-all duration-300 shadow-sm ${service.isPaid ? 'bg-stone-50 border-stone-100' : 'bg-white border-brand-200'}`}
+      // ESTÁNDAR: rounded-[2.5rem], border-stone-200
+      className={`rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${service.isPaid ? 'bg-stone-50 border-stone-200' : 'bg-white border-brand-200'}`}
     >
       <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 h-full">
         <div className="flex-1">
@@ -191,7 +193,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, on
           </div>
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 border-stone-100 pt-4 md:pt-0">
+        {/* Divisor: border-stone-200 */}
+        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 border-stone-200 pt-4 md:pt-0">
           <div className="text-left md:text-right">
             <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Renovación</p>
             <p className={`text-xl font-black ${service.isPaid ? 'text-stone-400' : 'text-stone-800'}`}>${service.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
@@ -199,14 +202,14 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, on
           <div className="flex items-center gap-2">
             <button 
               onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              // ESTÁNDAR: rounded-2xl
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
             >
               {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
             </button>
-            {/* Desktop Actions (Hidden on Mobile) */}
             <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18} /></button>
             </div>
           </div>
         </div>
@@ -228,11 +231,13 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
     <SwipeableCard 
       onEdit={onEdit} 
       onDelete={onDelete}
-      className={`rounded-[2rem] border transition-all duration-300 shadow-sm ${charge.status === 'paid' ? 'bg-stone-50 border-stone-100' : 'bg-white border-stone-200'}`}
+      // ESTÁNDAR: rounded-[2.5rem], border-stone-200
+      className={`rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${charge.status === 'paid' ? 'bg-stone-50 border-stone-200' : 'bg-white border-stone-200'}`}
     >
       <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 h-full">
         <div className="flex items-center gap-4 flex-1">
-          <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
+          {/* Icono: rounded-2xl */}
+          <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
             <Receipt size={18} />
           </div>
           <div>
@@ -245,18 +250,19 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
           <p className={`text-lg font-black ${charge.status === 'paid' ? 'text-stone-400' : 'text-stone-800'}`}>
             ${charge.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
           </p>
+          {/* Divisor: border-stone-200 */}
           <div className="w-px h-8 bg-stone-200 mx-2 hidden md:block"></div>
           <div className="flex items-center gap-2 ml-auto md:ml-0">
             <button 
               onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              // ESTÁNDAR: rounded-2xl
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
             >
               {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
             </button>
-            {/* Desktop Actions (Hidden on Mobile) */}
             <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18} /></button>
             </div>
           </div>
         </div>
@@ -269,6 +275,7 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
 export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
   ({ showToast, setConfirmDialog }, ref) => {
     
+    // ... [Estados iniciales se mantienen igual] ...
     const [services, setServices] = useState<AnnualService[]>([
       {
         id: 'srv-domain', concept: 'Dominio (rancholastrojes.com.mx)', description: '',
@@ -324,7 +331,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       }
     }));
 
-    // --- HANDLERS DE CARGOS ---
+    // --- HANDLERS (Iguales a tu versión anterior) ---
     const handleOpenChargeModal = (charge?: ExtraCharge) => {
       if (charge) {
         setEditingCharge(charge);
@@ -378,7 +385,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       setExtraCharges(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'pending' ? 'paid' : 'pending' } : c));
     };
 
-    // --- HANDLERS DE SERVICIOS ---
     const handleOpenServiceModal = (service?: AnnualService) => {
       if (service) {
         setEditingService(service);
@@ -436,7 +442,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       setServices(prev => prev.map(s => s.id === id ? { ...s, isPaid: !s.isPaid } : s));
     };
 
-    // Cálculos
     const totalPendingFixed = services.filter(s => !s.isPaid).reduce((acc, curr) => acc + curr.amount, 0);
     const totalPendingExtra = extraCharges.filter(c => c.status === 'pending').reduce((acc, curr) => acc + curr.amount, 0);
     const granTotalPending = totalPendingFixed + totalPendingExtra;
@@ -447,9 +452,9 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       : null;
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 pb-12">
         
-        {/* Banner de Resumen */}
+        {/* Banner de Resumen: rounded-[2.5rem] */}
         <div className={`p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl text-white transition-all duration-500
           ${granTotalPending > 0 ? 'bg-stone-900' : 'bg-green-600'}
         `}>
@@ -476,11 +481,11 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           )}
         </div>
 
-        {/* Módulo de Servicios Fijos */}
+        {/* Módulo de Servicios Fijos: rounded-[2.5rem], border-stone-200 */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-200 gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600">
                 <Server size={20} />
               </div>
               <div>
@@ -491,6 +496,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
 
             <button 
               onClick={() => handleOpenServiceModal()}
+              // ESTÁNDAR: rounded-2xl, border-stone-200
               className="flex items-center justify-center gap-2 bg-stone-50 text-stone-600 px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95"
             >
               <Plus size={16} />
@@ -511,11 +517,11 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         </div>
 
-        {/* Módulo de Cargos Adicionales */}
+        {/* Módulo de Cargos Adicionales: rounded-[2.5rem], border-stone-200 */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-stone-200 gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600">
                 <Receipt size={20} />
               </div>
               <div>
@@ -552,12 +558,11 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         </div>
 
-        {/* Modals ... (Resto del código intacto) */}
-        {/* Modal: Servicio Anual */}
+        {/* Modal: Servicio Anual - ESTÁNDAR: rounded-t-[2.5rem] */}
         {isServiceModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsServiceModalOpen(false)} />
-            <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
               <div className="p-8 sm:p-10">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-black text-stone-800 tracking-tight">
@@ -566,41 +571,47 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsServiceModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveService} className="space-y-6">
+                  {/* ... Inputs de Servicio (rounded-2xl y border-stone-200) ... */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Servicio</label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-4 flex items-center justify-center text-stone-400 group-focus-within:text-brand-500 transition-colors pointer-events-none"><Tag size={18} /></span>
-                        <input type="text" required value={serviceFormData.concept} onChange={(e) => setServiceFormData({ ...serviceFormData, concept: e.target.value })} placeholder="Ej. Licencia de Plugins..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                        <input type="text" required value={serviceFormData.concept} onChange={(e) => setServiceFormData({ ...serviceFormData, concept: e.target.value })} placeholder="Ej. Licencia de Plugins..." 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                       </div>
                     </div>
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Descripción (Opcional)</label>
                       <div className="relative">
                         <span className="absolute top-5 left-4 flex items-start justify-center text-stone-400 group-focus-within:text-brand-500 transition-colors pointer-events-none"><FileText size={18} /></span>
-                        <textarea rows={2} value={serviceFormData.description} onChange={(e) => setServiceFormData({ ...serviceFormData, description: e.target.value })} placeholder="Detalles de lo que incluye..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm resize-none" />
+                        <textarea rows={2} value={serviceFormData.description} onChange={(e) => setServiceFormData({ ...serviceFormData, description: e.target.value })} placeholder="Detalles de lo que incluye..." 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm resize-none" />
                       </div>
                     </div>
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Monto (MXN)</label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-4 flex items-center justify-center text-stone-400 group-focus-within:text-brand-500 transition-colors pointer-events-none"><DollarSign size={18} /></span>
-                        <input type="number" required min="1" step="0.01" value={serviceFormData.amount} onChange={(e) => setServiceFormData({ ...serviceFormData, amount: e.target.value })} placeholder="0.00" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                        <input type="number" required min="1" step="0.01" value={serviceFormData.amount} onChange={(e) => setServiceFormData({ ...serviceFormData, amount: e.target.value })} placeholder="0.00" 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="group space-y-2">
                         <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Contratado</label>
-                        <input type="date" value={serviceFormData.contractDate} onChange={(e) => setServiceFormData({ ...serviceFormData, contractDate: e.target.value })} className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl p-4 outline-none transition-all font-bold text-stone-700 shadow-sm text-sm" />
+                        <input type="date" value={serviceFormData.contractDate} onChange={(e) => setServiceFormData({ ...serviceFormData, contractDate: e.target.value })} 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl p-4 outline-none transition-all font-bold text-stone-700 shadow-sm text-sm" />
                       </div>
                       <div className="group space-y-2">
                         <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Vence</label>
-                        <input type="date" value={serviceFormData.dueDate} onChange={(e) => setServiceFormData({ ...serviceFormData, dueDate: e.target.value })} className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl p-4 outline-none transition-all font-bold text-stone-700 shadow-sm text-sm" />
+                        <input type="date" value={serviceFormData.dueDate} onChange={(e) => setServiceFormData({ ...serviceFormData, dueDate: e.target.value })} 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl p-4 outline-none transition-all font-bold text-stone-700 shadow-sm text-sm" />
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setIsServiceModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200/50">Cancelar</button>
+                    <button type="button" onClick={() => setIsServiceModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200">Cancelar</button>
                     <button type="submit" disabled={!(serviceFormData.concept.trim() && serviceFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${!(serviceFormData.concept.trim() && serviceFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
                       {editingService ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />} {editingService ? 'Guardar' : 'Añadir'}
                     </button>
@@ -611,11 +622,11 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
           </div>
         , document.body)}
 
-        {/* Modal: Cargo Extra */}
+        {/* Modal: Cargo Extra - ESTÁNDAR: rounded-t-[2.5rem] */}
         {isChargeModalOpen && createPortal(
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsChargeModalOpen(false)} />
-            <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
               <div className="p-8 sm:p-10">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-black text-stone-800 tracking-tight">
@@ -630,19 +641,21 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Cargo</label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-4 flex items-center justify-center text-stone-400 group-focus-within:text-brand-500 transition-colors pointer-events-none"><Tag size={18} /></span>
-                        <input type="text" required value={chargeFormData.concept} onChange={(e) => setChargeFormData({ ...chargeFormData, concept: e.target.value })} placeholder="Ej. Fotografía de Productos..." className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                        <input type="text" required value={chargeFormData.concept} onChange={(e) => setChargeFormData({ ...chargeFormData, concept: e.target.value })} placeholder="Ej. Fotografía de Productos..." 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                       </div>
                     </div>
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Monto (MXN)</label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-4 flex items-center justify-center text-stone-400 group-focus-within:text-brand-500 transition-colors pointer-events-none"><DollarSign size={18} /></span>
-                        <input type="number" required min="1" step="0.01" value={chargeFormData.amount} onChange={(e) => setChargeFormData({ ...chargeFormData, amount: e.target.value })} placeholder="0.00" className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
+                        <input type="number" required min="1" step="0.01" value={chargeFormData.amount} onChange={(e) => setChargeFormData({ ...chargeFormData, amount: e.target.value })} placeholder="0.00" 
+                          className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-stone-700 shadow-sm" />
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setIsChargeModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200/50">Cancelar</button>
+                    <button type="button" onClick={() => setIsChargeModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200">Cancelar</button>
                     <button type="submit" disabled={!(chargeFormData.concept.trim() && chargeFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${!(chargeFormData.concept.trim() && chargeFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
                       {editingCharge ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />} {editingCharge ? 'Guardar' : 'Añadir'}
                     </button>

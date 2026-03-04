@@ -128,7 +128,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => !file && !initialData && fileInputRef.current?.click()}
-          className={`relative w-full aspect-[4/3] sm:aspect-video lg:aspect-[4/5] rounded-[3rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center overflow-hidden bg-white/50 cursor-pointer
+          // ESTÁNDAR: rounded-[2.5rem], border-stone-200
+          className={`relative w-full aspect-[4/3] sm:aspect-video lg:aspect-[4/5] rounded-[2.5rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center overflow-hidden bg-white/50 cursor-pointer
             ${!previewUrl ? 'border-stone-200 hover:border-brand-400 hover:bg-brand-50/20' : 'border-transparent shadow-2xl shadow-stone-200'}
           `}
         >
@@ -195,7 +196,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
       </div>
 
       <div className="w-full lg:w-[420px] flex flex-col gap-6">
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-white/60 space-y-6">
+        {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-200 space-y-6">
           
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-1">Título del Medio *</label>
@@ -206,7 +208,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
               value={title}
               maxLength={150}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+              // ESTÁNDAR: rounded-2xl, border-stone-200
+              className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
             />
           </div>
 
@@ -220,7 +223,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                   setCategory(e.target.value);
                   setSubCategory('');
                 }}
-                className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                // ESTÁNDAR: rounded-2xl, border-stone-200
+                className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               >
                 <option value="" disabled>Selecciona categoría</option>
                 {CATEGORIES.map(cat => (
@@ -240,7 +244,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 <select 
                   value={subCategory}
                   onChange={(e) => setSubCategory(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                  // ESTÁNDAR: rounded-2xl, border-stone-200
+                  className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                 >
                   <option value="">Selecciona subcategoría</option>
                   {subCategories.map(sub => (
@@ -262,7 +267,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
                 placeholder="Ej. Sector Sur, Rancho Las Trojes"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-100 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                // ESTÁNDAR: rounded-2xl, border-stone-200
+                className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               />
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-400">
                 <MapPin size={18} />
@@ -277,7 +283,8 @@ export const NewMediaForm: React.FC<NewMediaFormProps> = ({ initialData, onCance
               placeholder="Cuéntanos más sobre este medio..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-medium placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none"
+              // ESTÁNDAR: rounded-2xl, border-stone-200
+              className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-medium placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none"
             />
           </div>
 

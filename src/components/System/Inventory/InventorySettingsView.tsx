@@ -30,6 +30,7 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
         
+        {/* Banner Info: rounded-[2rem], border-brand-100 (se mantiene semántico) */}
         <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
           <div className="text-brand-500 mt-1 shrink-0"><Info size={24} /></div>
           <div>
@@ -40,10 +41,12 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
           </div>
         </div>
 
+        {/* Card Principal: rounded-[2.5rem], border-stone-200 */}
         <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-600">
+              {/* Icono: rounded-2xl, border-stone-200 */}
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-600">
                 <RotateCcw size={20} />
               </div>
               <div>
@@ -74,7 +77,8 @@ export const InventorySettingsView = forwardRef<InventorySettingsViewRef, Invent
                   value={config.hours} 
                   onChange={(e) => setConfig({ ...config, hours: parseInt(e.target.value) || 0 })} 
                   placeholder="Ej. 24" 
-                  className="w-full bg-stone-50 border-2 border-transparent focus:border-brand-500/20 focus:bg-white focus:ring-4 focus:ring-brand-500/5 rounded-2xl py-4 pl-12 pr-16 outline-none transition-all font-black text-stone-700 shadow-sm" 
+                  // ESTÁNDAR: Input homologado (CategoryForm)
+                  className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 pr-16 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" 
                 />
                 <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-stone-400 font-bold text-[10px] uppercase tracking-widest">
                   Horas

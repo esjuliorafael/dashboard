@@ -10,7 +10,7 @@ interface OrdersViewProps {
   onCancelOrder: (orderId: string) => void;
 }
 
-const ITEMS_PER_PAGE = 8; // Homologado con StoreView
+const ITEMS_PER_PAGE = 8;
 
 export const OrdersView: React.FC<OrdersViewProps> = ({ 
   orders, 
@@ -70,8 +70,9 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         )}
       </div>
 
+      {/* Pagination Controls - HOMOLOGADO CON GALLERY (Sin pb-4) */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-8 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex items-center justify-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">
             <button
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}

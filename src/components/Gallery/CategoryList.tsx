@@ -131,7 +131,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
           {filtered.map((cat, idx) => (
             <div 
               key={cat.id} 
-              className="flex flex-col bg-white p-6 sm:p-7 rounded-[2.5rem] shadow-sm border border-white/60 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 animate-in fade-in zoom-in-95 group"
+              // ESTÁNDAR APLICADO: rounded-[2.5rem], border-stone-200, hover:shadow-md (sin translate)
+              className="flex flex-col bg-white p-6 sm:p-7 rounded-[2.5rem] shadow-sm border border-stone-200 hover:shadow-md transition-all duration-500 animate-in fade-in zoom-in-95 group"
               style={{ animationDelay: `${idx * 40}ms` }}
             >
               <div className="flex items-center justify-between mb-5">
@@ -141,14 +142,15 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                   <button 
                     onClick={() => onEdit({id: cat.id, name: cat.name})}
-                    className="p-2.5 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-xl transition-colors active:scale-90"
+                    // ESTÁNDAR APLICADO: rounded-2xl
+                    className="p-2.5 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-2xl transition-colors active:scale-90"
                     title="Editar Categoría"
                   >
                     <Edit2 size={16} strokeWidth={2.5} />
                   </button>
                   <button 
                     onClick={() => onDelete(cat.id)}
-                    className="p-2.5 bg-stone-50 hover:bg-rose-50 hover:text-rose-600 text-stone-600 rounded-xl transition-colors active:scale-90"
+                    className="p-2.5 bg-stone-50 hover:bg-rose-50 hover:text-rose-600 text-stone-600 rounded-2xl transition-colors active:scale-90"
                     title="Eliminar Categoría"
                   >
                     <Trash2 size={16} strokeWidth={2.5} />
@@ -176,14 +178,16 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
               <div className="grid grid-cols-2 gap-3 mt-8">
                 <button 
                   onClick={() => openManager(cat)}
-                  className="px-4 py-3 bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-stone-100"
+                  // ESTÁNDAR APLICADO: border-stone-200
+                  className="px-4 py-3 bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-stone-200"
                 >
                   <Layers size={14} />
                   Ver Subs
                 </button>
                 <button 
                   onClick={() => openManager(cat, true)}
-                  className="px-4 py-3 bg-brand-50 hover:bg-brand-100 text-brand-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-brand-100/30"
+                  // ESTÁNDAR APLICADO: border-brand-200/50 (variante brand pero sólida)
+                  className="px-4 py-3 bg-brand-50 hover:bg-brand-100 text-brand-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-brand-100/50"
                 >
                   <Plus size={14} strokeWidth={3} />
                   Nueva Sub
@@ -210,7 +214,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
             onClick={closeManager}
           />
           
-          <div className="relative w-full max-w-2xl bg-white rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh] sm:max-h-[80vh] animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500">
+          <div className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh] sm:max-h-[80vh] animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500">
             
             <div className="px-8 pt-8 pb-6 border-b border-stone-100 shrink-0">
               <div className="flex items-center justify-between">
@@ -236,7 +240,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                     activeManagerCat.subcategories.map((sub, sidx) => (
                       <div 
                         key={sub.id} 
-                        className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-100 hover:border-brand-100 hover:bg-white transition-all duration-300 animate-in fade-in slide-in-from-left-4 shadow-sm hover:shadow-md"
+                        // ESTÁNDAR APLICADO: border-stone-200
+                        className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200 hover:border-brand-200 hover:bg-white transition-all duration-300 animate-in fade-in slide-in-from-left-4 shadow-sm hover:shadow-md"
                         style={{ animationDelay: `${sidx * 40}ms` }}
                       >
                         <div className="flex items-center gap-4">
@@ -251,13 +256,14 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => startEditSub(sub)}
-                            className="p-2.5 text-stone-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-all active:scale-90"
+                            // ESTÁNDAR APLICADO: rounded-2xl
+                            className="p-2.5 text-stone-400 hover:text-brand-600 hover:bg-brand-50 rounded-2xl transition-all active:scale-90"
                           >
                             <Edit2 size={16} strokeWidth={2.5} />
                           </button>
                           <button 
                             onClick={() => handleDeleteSub(sub.id)}
-                            className="p-2.5 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90"
+                            className="p-2.5 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-90"
                           >
                             <Trash2 size={16} strokeWidth={2.5} />
                           </button>
@@ -303,7 +309,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                       value={subNameInput}
                       autoFocus
                       onChange={(e) => setSubNameInput(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                      // ESTÁNDAR APLICADO: border-stone-200
+                      className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                     />
                   </div>
 
@@ -311,7 +318,8 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                     <button 
                       type="button"
                       onClick={() => setManagerView('list')}
-                      className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-[0.98] border border-stone-200/50"
+                      // ESTÁNDAR APLICADO: border-stone-200
+                      className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-[0.98] border border-stone-200"
                     >
                       Cancelar
                     </button>

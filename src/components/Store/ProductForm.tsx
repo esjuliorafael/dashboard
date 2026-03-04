@@ -78,7 +78,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
       <div className="flex-1 space-y-6">
         <div 
           onClick={() => !coverUrl && coverInputRef.current?.click()}
-          className={`relative w-full aspect-square sm:aspect-video lg:aspect-square rounded-[3rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center overflow-hidden bg-white/50
+          // ESTÁNDAR: rounded-[2.5rem], border-stone-200
+          className={`relative w-full aspect-square sm:aspect-video lg:aspect-square rounded-[2.5rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center overflow-hidden bg-white/50
             ${!coverUrl ? 'border-stone-200 hover:border-brand-400 hover:bg-brand-50/20 cursor-pointer' : 'border-transparent shadow-2xl shadow-stone-200'}
           `}
         >
@@ -108,7 +109,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
         </div>
 
         {/* Multi-Gallery */}
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-white/60">
+        {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-6">
              <div className="flex flex-col">
                 <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">Multimedia</span>
@@ -117,7 +119,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
              <button 
                type="button"
                onClick={() => galleryInputRef.current?.click()}
-               className="p-3 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-2xl transition-all active:scale-90"
+               // ESTÁNDAR: border-stone-200
+               className="p-3 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-2xl transition-all active:scale-90 border border-stone-200"
              >
                 <Upload size={20} />
              </button>
@@ -126,7 +129,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
           
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {galleryUrls.map((url, idx) => (
-              <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-stone-100 shadow-sm">
+              <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-stone-200 shadow-sm">
                 <img src={url} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
                 <button 
                   type="button"
@@ -138,6 +141,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
               </div>
             ))}
             {galleryUrls.length === 0 && (
+              // ESTÁNDAR: border-stone-200
               <div className="col-span-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200">
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">No hay imágenes adicionales</p>
               </div>
@@ -148,7 +152,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
 
       {/* Right Column: Details Form */}
       <div className="w-full lg:w-[480px] flex flex-col gap-6">
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-white/60 space-y-8">
+        {/* ESTÁNDAR: rounded-[2.5rem], border-stone-200 */}
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-200 space-y-8">
           
           {/* Product Type Selector */}
           <div className="flex flex-col gap-3">
@@ -157,8 +162,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                <button 
                  type="button"
                  onClick={() => setProductType('ave')}
+                 // ESTÁNDAR: rounded-2xl, border-stone-200 (inactivo)
                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 transition-all font-black text-xs uppercase tracking-widest
-                    ${productType === 'ave' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}
+                    ${productType === 'ave' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300'}
                  `}
                >
                  <Box size={18} />
@@ -168,7 +174,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                  type="button"
                  onClick={() => setProductType('articulo')}
                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 transition-all font-black text-xs uppercase tracking-widest
-                    ${productType === 'articulo' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200'}
+                    ${productType === 'articulo' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300'}
                  `}
                >
                  <Package size={18} />
@@ -186,7 +192,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                 placeholder={productType === 'ave' ? "Ej. Semental Colorado..." : "Ej. Sombrero de Gala..."}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                // ESTÁNDAR: border-stone-200
+                className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
               />
             </div>
 
@@ -200,7 +207,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     placeholder="0.00"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-100 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    // ESTÁNDAR: border-stone-200
+                    className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   />
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-500">
                     <DollarSign size={18} />
@@ -217,7 +225,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     placeholder="Ej. AB-123"
                     value={ringNumber}
                     onChange={(e) => setRingNumber(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    // ESTÁNDAR: border-stone-200
+                    className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   />
                 </div>
               ) : (
@@ -229,7 +238,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     placeholder="Cantidad"
                     value={stock}
                     onChange={(e) => setStock(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    // ESTÁNDAR: border-stone-200
+                    className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   />
                 </div>
               )}
@@ -243,7 +253,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     <select 
                       value={age}
                       onChange={(e) => setAge(e.target.value as any)}
-                      className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      // ESTÁNDAR: border-stone-200
+                      className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                     >
                       <option value="gallina">Gallina</option>
                       <option value="gallo">Gallo</option>
@@ -261,7 +272,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                     <select 
                       value={purpose}
                       onChange={(e) => setPurpose(e.target.value as any)}
-                      className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      // ESTÁNDAR: border-stone-200
+                      className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                     >
                       <option value="combate">Combate</option>
                       <option value="cria">Cría</option>
@@ -280,7 +292,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                 <select 
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                  // ESTÁNDAR: border-stone-200
+                  className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                 >
                   <option value="available">Disponible</option>
                   <option value="reserved">Reservado</option>
@@ -299,7 +312,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
                 placeholder="Detalles adicionales, genética, materiales..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl text-stone-800 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all resize-none"
+                // ESTÁNDAR: border-stone-200
+                className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all resize-none"
               />
             </div>
 
