@@ -1,14 +1,12 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
 export const SalesChart: React.FC = () => {
-  // Generate data for the last 7 days ending today
   const data = useMemo(() => {
     const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
     const today = new Date();
     const result = [];
-    
-    // Mock values simulating realistic data variation
     const values = [3500, 5200, 4100, 2800, 6300, 4900, 7550];
 
     for (let i = 6; i >= 0; i--) {
@@ -16,7 +14,7 @@ export const SalesChart: React.FC = () => {
       d.setDate(d.getDate() - i);
       result.push({
         name: days[d.getDay()],
-        value: values[6 - i], // Map values chronologically
+        value: values[6 - i],
         isToday: i === 0
       });
     }
@@ -24,42 +22,52 @@ export const SalesChart: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-full min-h-[256px] flex flex-col justify-between">
-      <div className="mb-4">
-        <h3 className="text-stone-500 text-sm font-medium uppercase tracking-wider">Ventas Totales (Últimos 7 días)</h3>
-        <p className="text-2xl font-bold text-stone-800 mt-1">$34,350.00 MXN</p>
+    // ESTÁNDAR: rounded-[2.5rem], border-stone-200
+    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200 flex flex-col justify-between h-full min-h-[320px]">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-stone-800 text-lg font-black tracking-tight">Ventas Totales</h3>
+          <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">Últimos 7 días</p>
+        </div>
+        {/* Icono: rounded-2xl */}
+        <div className="p-2.5 bg-green-50 text-green-600 rounded-2xl border border-green-100">
+          <TrendingUp size={20} />
+        </div>
       </div>
       
-      <div className="flex-grow w-full h-[200px]">
+      <div className="flex items-baseline gap-2 mb-6">
+        <span className="text-4xl font-black text-stone-800 tracking-tighter">$34,350</span>
+        <span className="text-sm font-bold text-stone-400">MXN</span>
+      </div>
+
+      <div className="flex-grow w-full min-h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+          <BarChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
             <XAxis 
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#a8a29e', fontSize: 12 }} 
+              tick={{ fill: '#a8a29e', fontSize: 10, fontWeight: 700 }} 
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#a8a29e', fontSize: 12 }} 
+              tick={{ fill: '#a8a29e', fontSize: 10, fontWeight: 700 }} 
             />
             <Tooltip 
               cursor={{ fill: 'transparent' }}
-              contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-              itemStyle={{ color: '#b47e74', fontWeight: 600 }}
-              formatter={(value: number) => [`$${value}`, 'Ventas']}
+              contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e7e5e4', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              itemStyle={{ color: '#ea580c', fontWeight: 700, fontSize: '12px' }}
+              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ventas']}
             />
-            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="value" radius={[6, 6, 0, 0]}>
               {data.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={entry.isToday ? '#b47e74' : '#eadad6'} 
+                  fill={entry.isToday ? '#ea580c' : '#e5e5e5'} 
+                  className="transition-all duration-300 hover:opacity-80"
                 />
               ))}
             </Bar>

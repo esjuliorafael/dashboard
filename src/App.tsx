@@ -9,7 +9,11 @@ import { LatestMedia } from './components/Widgets/LatestMedia';
 import { LatestProducts } from './components/Widgets/LatestProducts';
 import { CategoryWidget } from './components/Widgets/CategoryWidget';
 import { GalleryWidget } from './components/Widgets/GalleryWidget';
-import { StatsOverview } from './components/Widgets/StatsOverview';
+// NUEVOS IMPORTS: Widgets Atómicos
+import { ActiveProductsWidget } from './components/Widgets/ActiveProductsWidget';
+import { PaidOrdersWidget } from './components/Widgets/PaidOrdersWidget';
+import { PendingOrdersWidget } from './components/Widgets/PendingOrdersWidget';
+
 import { BottomNav } from './components/BottomNav';
 import { GalleryView } from './components/Gallery/GalleryView';
 import { StoreView } from './components/Store/StoreView';
@@ -852,13 +856,25 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  <div className="xl:col-span-2 bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200 hover:shadow-md transition-shadow duration-300 min-h-[384px]">
+                  {/* CHART: 2/3 del espacio */}
+                  <div className="xl:col-span-2 min-h-[350px]">
                     <SalesChart />
                   </div>
-                  <div className="xl:col-span-1">
-                    <StatsOverview />
+                  
+                  {/* WIDGETS: 1/3 del espacio, organizados verticalmente */}
+                  <div className="xl:col-span-1 flex flex-col gap-6">
+                    {/* Widget Grande (Productos) */}
+                    <div className="flex-1">
+                      <ActiveProductsWidget />
+                    </div>
+                    {/* Grid de Widgets Pequeños (Pagadas y Pendientes) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <PaidOrdersWidget />
+                      <PendingOrdersWidget />
+                    </div>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                   <div className="xl:col-span-2">
                     <div className="flex items-center justify-between mb-4 px-1">

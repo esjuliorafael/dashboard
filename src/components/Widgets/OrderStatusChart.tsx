@@ -18,7 +18,7 @@ export const OrderStatusChart: React.FC = () => {
         <h3 className="text-lg font-black text-stone-700 tracking-tight">Estado de Órdenes</h3>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-4xl font-black text-stone-800 tracking-tighter">{totalOrders}</span>
-          <span className="text-sm text-stone-400 font-bold uppercase tracking-widest">totales</span>
+          <span className="text-sm text-stone-400 font-bold">totales</span>
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 w-fit mt-3">
           <TrendingUp size={14} />
