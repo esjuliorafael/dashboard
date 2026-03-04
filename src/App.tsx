@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar, TrendingUp, DollarSign, Box, Clock, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw } from 'lucide-react';
+import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw } from 'lucide-react';
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
@@ -9,6 +9,7 @@ import { LatestMedia } from './components/Widgets/LatestMedia';
 import { LatestProducts } from './components/Widgets/LatestProducts';
 import { CategoryWidget } from './components/Widgets/CategoryWidget';
 import { GalleryWidget } from './components/Widgets/GalleryWidget';
+import { StatsOverview } from './components/Widgets/StatsOverview';
 import { BottomNav } from './components/BottomNav';
 import { GalleryView } from './components/Gallery/GalleryView';
 import { StoreView } from './components/Store/StoreView';
@@ -851,57 +852,11 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  <div className="xl:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-white/60 min-h-[350px]">
+                  <div className="xl:col-span-2 bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200 hover:shadow-md transition-shadow duration-300 min-h-[384px]">
                     <SalesChart />
                   </div>
-                  <div className="flex flex-col gap-6">
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-white/60 flex flex-col justify-center flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <span className="text-stone-500 text-xs font-bold uppercase tracking-widest">Productos Activos</span>
-                          <h3 className="text-4xl font-black text-stone-800 mt-1">142</h3>
-                        </div>
-                        <div className="p-3.5 bg-brand-50 text-brand-600 rounded-2xl">
-                          <Box size={24} />
-                        </div>
-                      </div>
-                      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-green-600 bg-green-50 w-fit px-2 py-1 rounded-lg">
-                        <TrendingUp size={12} />
-                        <span>+12 ESTE MES</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-white/60 flex flex-col">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="w-8 h-8 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
-                            <DollarSign size={16} />
-                          </div>
-                          <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">+4%</span>
-                        </div>
-                        <div>
-                          <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest leading-none">Pagadas</p>
-                          <p className="text-2xl font-black text-stone-800 mt-1.5">24</p>
-                          <div className="mt-2.5 h-1 w-full bg-stone-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500 w-[75%]" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-white/60 flex flex-col">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
-                            <Clock size={16} />
-                          </div>
-                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">-2%</span>
-                        </div>
-                        <div>
-                          <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest leading-none">Pendientes</p>
-                          <p className="text-2xl font-black text-stone-800 mt-1.5">8</p>
-                          <div className="mt-2.5 h-1 w-full bg-stone-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-500 w-[25%]" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="xl:col-span-1">
+                    <StatsOverview />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

@@ -24,7 +24,7 @@ export const SalesChart: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-full min-h-[250px] flex flex-col justify-between">
+    <div className="w-full h-full min-h-[256px] flex flex-col justify-between">
       <div className="mb-4">
         <h3 className="text-stone-500 text-sm font-medium uppercase tracking-wider">Ventas Totales (Últimos 7 días)</h3>
         <p className="text-2xl font-bold text-stone-800 mt-1">$34,350.00 MXN</p>
