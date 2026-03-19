@@ -10,7 +10,7 @@ const API_BASE_URL = IS_DEV ? '/admin/api' : 'api';
 
 // ASSETS: En desarrollo apunta directo a tu PHP local, en producción sube un nivel (../)
 // Asegúrate de que esta URL coincida con tu carpeta local de proyecto
-const ASSET_BASE_URL = IS_DEV ? 'http://localhost/las-trojes/' : '../';
+export const ASSET_BASE_URL = IS_DEV ? 'http://localhost/las-trojes/' : '../';
 
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}/${endpoint}`;
@@ -336,6 +336,20 @@ export const apiSystem = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(zones.map(z => ({ id: z.id, zone: z.zone })))
     });
+  }
+
+  updateLogo: async (file: File): Promise<{ path: string }> => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    // IMPORTANTE: Cuando mandas un FormData con un archivo, NO debes poner el header 'Content-Type'.
+    // El navegador (fetch) lo pone automáticamente con el 'boundary' correcto.
+    const url = `${API_BASE_URL}/identidad.php`;
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData
+    });
+    if (!response.ok) throw new Error('Error al subir el logo');
+    return response.json();
   }
 };
 

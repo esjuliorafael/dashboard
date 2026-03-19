@@ -1,5 +1,6 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
-import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { UploadCloud, Image as ImageIcon, CheckCircle2, Info, Loader2 } from 'lucide-react';
+import { apiSystem, ASSET_BASE_URL } from '../../../api';
 
 export interface IdentityViewRef {
   handleSave: () => void;
@@ -9,141 +10,197 @@ export interface IdentityViewRef {
 interface IdentityViewProps {
   status: 'empty' | 'preview' | 'editing';
   setStatus: (status: 'empty' | 'preview' | 'editing') => void;
-  onTempLogoChange: (hasTemp: boolean) => void;
+  onTempLogoChange: (hasLogo: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
 export const IdentityView = forwardRef<IdentityViewRef, IdentityViewProps>(
   ({ status, setStatus, onTempLogoChange, showToast }, ref) => {
-    const [currentLogo, setCurrentLogo] = useState<string | null>('https://rancholastrojes.com.mx/assets/uploads/logo/logo_698abd3f7c34d.png');
-    const [tempLogo, setTempLogo] = useState<string | null>(null);
+    
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    
+    const [currentLogoPath, setCurrentLogoPath] = useState<string | null>(null);
+    const [tempFile, setTempFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Cargar la configuración actual al montar
+    const loadCurrentLogo = async () => {
+      setIsLoading(true);
+      try {
+        const config = await apiSystem.getConfig();
+        if (config['sistema_logo']) {
+          setCurrentLogoPath(config['sistema_logo']);
+          setStatus('preview');
+        } else {
+          setStatus('empty');
+        }
+      } catch (error) {
+        console.error("Error al cargar logo:", error);
+        showToast('No se pudo cargar la configuración del logo', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     useEffect(() => {
-      onTempLogoChange(!!tempLogo);
-    }, [tempLogo, onTempLogoChange]);
+      loadCurrentLogo();
+    }, []);
+
+    // Limpiar URLs creadas en memoria para evitar fugas de memoria
+    useEffect(() => {
+      return () => {
+        if (previewUrl && tempFile) URL.revokeObjectURL(previewUrl);
+      };
+    }, [previewUrl, tempFile]);
 
     useImperativeHandle(ref, () => ({
-      handleSave: () => {
-        if (tempLogo) {
-          setCurrentLogo(tempLogo);
+      handleSave: async () => {
+        if (!tempFile) return;
+        
+        setIsUploading(true);
+        try {
+          const response = await apiSystem.updateLogo(tempFile);
+          showToast('Logo del sistema actualizado correctamente', 'success');
+          
+          // Limpiamos los temporales y establecemos el nuevo logo oficial
+          setTempFile(null);
+          setPreviewUrl(null);
+          onTempLogoChange(false);
+          
+          setCurrentLogoPath(response.path); // path que devuelve el backend
           setStatus('preview');
-          setTempLogo(null);
-          showToast('Logo actualizado correctamente', 'success');
+        } catch (error) {
+          showToast('Ocurrió un error al subir el logo', 'error');
+        } finally {
+          setIsUploading(false);
         }
       },
       handleCancel: () => {
-        setStatus(currentLogo ? 'preview' : 'empty');
-        setTempLogo(null);
+        setTempFile(null);
+        setPreviewUrl(null);
+        onTempLogoChange(false);
+        setStatus(currentLogoPath ? 'preview' : 'empty');
       }
     }));
 
-    const handleFileSelect = (file: File) => {
-      if (file && (file.type === 'image/png' || file.type === 'image/svg+xml' || file.type === 'image/jpeg')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setTempLogo(e.target?.result as string);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        showToast('Por favor, selecciona un formato válido (PNG, JPG, SVG).', 'error');
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        // Validar tamaño (ej. max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('La imagen es muy pesada. El límite es 2MB', 'error');
+          return;
+        }
+        
+        setTempFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        onTempLogoChange(true);
       }
     };
 
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const files = e.dataTransfer.files;
-      if (files && files.length > 0) {
-        handleFileSelect(files[0]);
-      }
-    };
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-32">
+           <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+           <p className="text-stone-500 font-medium">Cargando identidad visual...</p>
+        </div>
+      );
+    }
 
     return (
-      // ESTÁNDAR: rounded-[2.5rem], border-stone-200
-      <div className="w-full bg-white border border-stone-200 rounded-[2.5rem] shadow-sm p-6 sm:p-12 transition-all duration-300 min-h-[420px] flex flex-col justify-center animate-in fade-in slide-in-from-bottom-4">
+      <div className="space-y-8 relative">
         
-        {status === 'empty' && (
-          <div className="flex flex-col items-center justify-center py-10 animate-in fade-in zoom-in-95 duration-300 text-center">
-            {/* Icono: rounded-2xl */}
-            <div className="w-24 h-24 bg-stone-50 border border-stone-200 rounded-[2rem] flex items-center justify-center text-stone-300 mb-6">
-              <ImageIcon size={48} strokeWidth={1.5} />
-            </div>
-            <h3 className="text-xl font-bold text-stone-800 mb-2">No hay ningún logo cargado.</h3>
-            <p className="text-stone-500">Haz clic en 'Subir logo' arriba para comenzar.</p>
-          </div>
+        {/* Capa de Bloqueo Visual (Solo para cuando está subiendo la imagen, que sí toma tiempo) */}
+        {isUploading && (
+             <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-[2.5rem] mt-[-2rem] mb-[-2rem]">
+                 <div className="flex flex-col items-center gap-2">
+                     <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
+                     <span className="text-sm font-bold text-brand-700">Subiendo y procesando logo...</span>
+                 </div>
+             </div>
         )}
 
-        {status === 'preview' && (
-          <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 w-full">
-            <div className="bg-stone-50 py-16 px-8 rounded-[2rem] w-full flex items-center justify-center mb-8 border border-stone-200">
-              <img 
-                src={currentLogo!} 
-                alt="Logo actual del sistema" 
-                className="max-h-[180px] sm:max-h-[220px] w-auto object-contain drop-shadow-sm transition-all duration-300"
-              />
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm text-stone-400 font-medium">
-              <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-stone-300"/> Formato: PNG</span>
-              <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-stone-300"/> Tamaño: Optimizado</span>
-              <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-green-400"/> Activo en Sistema</span>
-            </div>
+        {/* Banner Info */}
+        <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
+          <div className="text-brand-500 mt-1 shrink-0"><Info size={24} /></div>
+          <div>
+            <h4 className="font-bold text-brand-900">Marca y Sistema</h4>
+            <p className="text-sm text-brand-800 mt-1 leading-relaxed">
+              El logo que subas aquí será la cara de Rancho Las Trojes. Se actualizará automáticamente en el encabezado de este panel de administración, en la tienda en línea y en los documentos o recibos generados.
+            </p>
           </div>
-        )}
+        </div>
 
-        {status === 'editing' && (
-          <div className="animate-in fade-in zoom-in-95 duration-300 h-full flex flex-col justify-center w-full">
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              // ESTÁNDAR: rounded-[2rem] para zona de carga, border-stone-200
-              className="border-2 border-dashed border-stone-200 rounded-[2rem] p-10 sm:p-16 text-center cursor-pointer hover:bg-brand-50/20 hover:border-brand-300 transition-colors w-full flex flex-col items-center justify-center min-h-[320px] group"
-            >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/png, image/svg+xml, image/jpeg" 
-                onChange={(e) => {
-                  if(e.target.files && e.target.files.length > 0) {
-                    handleFileSelect(e.target.files[0]);
-                  }
-                }}
-              />
-              
-              {tempLogo ? (
-                <div className="flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
-                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-200 mb-6 relative group-hover:shadow-md transition-all">
-                    <img src={tempLogo} alt="Vista previa del nuevo logo" className="max-h-[180px] object-contain" />
-                    <div className="absolute inset-0 bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[2rem] backdrop-blur-[1px]">
-                      <span className="bg-stone-800 text-white px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-xl">
-                        <RefreshCw size={14} /> Cambiar imagen
-                      </span>
-                    </div>
+        {/* Contenedor Principal */}
+        <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
+          
+          <div className="flex flex-col items-center text-center max-w-xl mx-auto py-10">
+            
+            <div className="w-24 h-24 bg-stone-50 border border-stone-100 rounded-3xl flex items-center justify-center text-stone-400 mb-6 shadow-inner">
+              <ImageIcon size={40} strokeWidth={1.5} />
+            </div>
+            
+            <h3 className="text-2xl font-black text-stone-800 tracking-tight">Logo Principal</h3>
+            <p className="text-stone-500 font-medium mt-2">
+              Se recomienda usar formato PNG con fondo transparente o SVG para mejor adaptabilidad en modo oscuro.
+            </p>
+
+            <div className="mt-10 w-full">
+              {status === 'preview' && currentLogoPath ? (
+                <div className="relative group mx-auto w-64 h-64 bg-stone-50 rounded-[2rem] border-2 border-stone-200 flex items-center justify-center p-8 transition-all hover:border-brand-200">
+                  {/* Construimos la URL completa para previsualizar el logo guardado */}
+                  <img 
+                    src={`${ASSET_BASE_URL}${currentLogoPath}?t=${new Date().getTime()}`} // El query param ?t fuerza a refrescar caché si se sube uno nuevo con el mismo nombre, aunque en PHP ya lo arreglamos
+                    alt="Logo del Sistema" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                  <div className="absolute top-4 right-4 bg-green-500 text-white p-1.5 rounded-xl shadow-lg">
+                    <CheckCircle2 size={16} />
                   </div>
-                  <p className="text-sm font-medium text-stone-500">Vista previa generada. Recuerda guardar los cambios.</p>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300">
-                  <div className="w-20 h-20 bg-white shadow-sm border border-stone-200 rounded-full flex items-center justify-center text-stone-400 mb-6 group-hover:scale-110 group-hover:text-stone-600 transition-all">
-                    <Upload size={32} strokeWidth={1.5} />
-                  </div>
-                  <h4 className="text-xl font-bold text-stone-700 mb-2">Haz clic o arrastra una imagen aquí</h4>
-                  <p className="text-sm font-medium text-stone-400 mt-2 bg-white px-4 py-1.5 rounded-full border border-stone-200 shadow-sm">
-                    Recomendado: PNG o SVG con fondo transparente.
-                  </p>
+                <div 
+                  className={`w-full max-w-md mx-auto border-2 border-dashed rounded-[2.5rem] p-10 transition-all text-center group cursor-pointer
+                    ${tempFile 
+                      ? 'border-brand-500 bg-brand-50' 
+                      : 'border-stone-200 hover:border-brand-400 hover:bg-stone-50'
+                    }`}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/png, image/jpeg, image/svg+xml, image/webp"
+                    onChange={handleFileChange}
+                  />
+                  
+                  {previewUrl ? (
+                    <div className="relative w-48 h-48 mx-auto">
+                      <img src={previewUrl} alt="Vista previa" className="w-full h-full object-contain" />
+                      <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <p className="text-white font-bold text-sm">Cambiar archivo</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-stone-100 flex items-center justify-center text-brand-500 mb-4 group-hover:scale-110 transition-transform">
+                        <UploadCloud size={28} />
+                      </div>
+                      <p className="font-bold text-stone-800">Haz clic para subir un archivo</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mt-2">PNG, JPG o SVG (Max. 2MB)</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
           </div>
-        )}
+        </div>
+
       </div>
     );
   }
