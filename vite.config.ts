@@ -1,24 +1,35 @@
+// vite.config.ts
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig(({ mode }) => {
-    // Ya no necesitas cargar env si no usas variables de entorno
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      plugins: [
-        react(),
-        tailwindcss(),
-      ],
-      // Borramos la sección 'define' que buscaba la API KEY
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, './src'),
-        }
+export default defineConfig({
+  base: './', // Importante para que funcione al subirlo a la carpeta /admin
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+    proxy: {
+      // Redirige las llamadas que empiecen con /admin/api a tu backend PHP local
+      '/admin/api': {
+        target: 'http://localhost/las-trojes', // <--- AJUSTA ESTO A TU RUTA LOCAL DE PHP
+        changeOrigin: true,
+        secure: false,
       }
-    };
+    }
+  },
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false
+  }
 });

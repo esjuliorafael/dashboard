@@ -1,7 +1,8 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Pencil, Trash2, X, Save, Check, User as UserIcon, Mail, Shield } from 'lucide-react';
+import { Pencil, Trash2, X, Save, Check, User as UserIcon, Mail, Shield, Loader2 } from 'lucide-react';
 import { User } from '../../../types';
+import { apiUsers } from '../../../api';
 
 interface UsersViewProps {
   showToast: (message: string, type?: 'success' | 'error') => void;
@@ -12,26 +13,33 @@ export interface UsersViewRef {
   handleCreateUser: () => void;
 }
 
-const initialUsers: User[] = [
-  {
-    id: '1', fullName: 'Ricardo Montes', email: 'ricardo@rancho.com', username: 'admin_ricardo', isActive: true, createdAt: '2023-01-15'
-  },
-  {
-    id: '2', fullName: 'Ana García', email: 'ana.g@rancho.com', username: 'ana_ventas', isActive: true, createdAt: '2023-05-20'
-  },
-  {
-    id: '3', fullName: 'Juan Pérez', email: 'juan.p@rancho.com', username: 'juan_logistica', isActive: false, createdAt: '2023-08-10'
-  }
-];
-
 export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, setConfirmDialog }, ref) => {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: '', email: '', username: '', password: ''
   });
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const data = await apiUsers.getAll();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error cargando usuarios:", error);
+      showToast("Error al cargar la lista de usuarios", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -67,57 +75,81 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
       message: `¿Estás seguro de eliminar a ${user.fullName}? Esta acción no se puede deshacer.`,
       confirmLabel: 'Sí, Eliminar',
       variant: 'danger',
-      onConfirm: () => {
-        setUsers(prev => prev.filter(u => u.id !== user.id));
-        showToast(`Usuario ${user.fullName} eliminado correctamente`, 'success');
+      onConfirm: async () => {
+        try {
+          await apiUsers.delete(user.id);
+          setUsers(prev => prev.filter(u => u.id !== user.id));
+          showToast(`Usuario ${user.fullName} eliminado correctamente`, 'success');
+        } catch (error) {
+          showToast('Error al eliminar usuario', 'error');
+        }
         setConfirmDialog({ isOpen: false });
       }
     });
   };
 
-  const toggleStatus = (id: string) => {
-    setUsers(prev => prev.map(u => 
-      u.id === id ? { ...u, isActive: !u.isActive } : u
-    ));
+  const toggleStatus = async (id: string) => {
     const user = users.find(u => u.id === id);
-    if (user) {
-      showToast(`Usuario ${user.fullName} ${!user.isActive ? 'activado' : 'desactivado'}`, 'success');
-    }
-  };
+    if (!user) return;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingUser) {
+    try {
+      await apiUsers.toggleStatus(id, !user.isActive);
       setUsers(prev => prev.map(u => 
-        u.id === editingUser.id ? { ...u, ...formData } : u
+        u.id === id ? { ...u, isActive: !u.isActive } : u
       ));
-      showToast('Cambios guardados correctamente');
-    } else {
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...formData,
-        isActive: true,
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setUsers(prev => [newUser, ...prev]);
-      showToast('Usuario creado correctamente');
+      showToast(`Usuario ${user.fullName} ${!user.isActive ? 'activado' : 'desactivado'}`, 'success');
+    } catch (error) {
+      showToast('Error al cambiar el estado del usuario', 'error');
     }
-    setIsModalOpen(false);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingUser) {
+        await apiUsers.update(editingUser.id, formData);
+        showToast('Cambios guardados correctamente');
+      } else {
+        await apiUsers.create(formData);
+        showToast('Usuario creado correctamente');
+      }
+      fetchUsers(); // Recargar datos reales
+      setIsModalOpen(false);
+    } catch (error) {
+      showToast('Error al guardar el usuario', 'error');
+    }
+  };
+
+  if (isLoading && users.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32">
+         <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+         <p className="text-stone-500 font-medium">Cargando usuarios...</p>
+      </div>
+    );
+  }
+
+  // --- REGLA: Cero animaciones in/fade de tailwind-animate en contenedores estáticos
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4">
-        {users.map((user) => (
-          <div key={user.id} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-6 transition-all hover:shadow-md">
+        {users.map((user, idx) => (
+          // --- REGLA: Animación card-enter con stagger para tarjetas múltiples ---
+          // --- REGLA 1: Tarjetas base con diseño estricto (padding ajustado por jerarquía) ---
+          <div 
+            key={user.id} 
+            className="animate-card-enter bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-md transition-all duration-300"
+            style={{ animationDelay: `${idx * 70}ms` }}
+          >
             <div className="flex items-center gap-5 w-full sm:w-auto">
-              {/* Icono: rounded-2xl */}
+              {/* REGLA 3: Icono interno rounded-2xl */}
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${user.isActive ? 'bg-stone-50 text-stone-400 border-stone-200' : 'bg-stone-100 text-stone-300 border-stone-100'}`}>
                 <UserIcon size={28} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-lg font-bold text-stone-800">{user.fullName}</h4>
+                  {/* REGLA 4: Título font-black text-stone-800 tracking-tight */}
+                  <h4 className="text-lg font-black text-stone-800 tracking-tight">{user.fullName}</h4>
                   <span className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-[10px] font-black uppercase tracking-widest">@{user.username}</span>
                 </div>
                 <p className="text-stone-500 text-sm font-medium mt-0.5">{user.email}</p>
@@ -133,15 +165,16 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
                   onClick={() => toggleStatus(user.id)}
                   className={`w-12 h-6 rounded-full transition-all relative ${user.isActive ? 'bg-brand-500' : 'bg-stone-200'}`}
                 >
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${user.isActive ? 'left-7' : 'left-1'}`} />
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${user.isActive ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
 
               <div className="flex items-center gap-2">
-                <button onClick={() => handleEdit(user)} className="p-3 bg-stone-50 text-stone-400 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-90" title="Editar Usuario">
+                {/* REGLA 6: Botones con active:scale-95 */}
+                <button onClick={() => handleEdit(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95" title="Editar Usuario">
                   <Pencil size={18} />
                 </button>
-                <button onClick={() => handleDeleteClick(user)} className="p-3 bg-stone-50 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-90" title="Eliminar Usuario">
+                <button onClick={() => handleDeleteClick(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95" title="Eliminar Usuario">
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -153,10 +186,11 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
       {isModalOpen && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-          {/* Modal: rounded-t-[2.5rem] */}
+          {/* Modal contenedor */}
           <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300">
             <div className="p-8 sm:p-10">
               <div className="flex items-center justify-between mb-8">
+                {/* REGLA 4 */}
                 <h3 className="text-2xl font-black text-stone-800 tracking-tight">
                   {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
                 </h3>
@@ -171,44 +205,46 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                   <div className="group">
-                    <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Nombre Completo</label>
+                    {/* REGLA 4: Labels */}
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2 ml-1">Nombre Completo *</label>
                     <div className="relative">
                       <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none group-focus-within:text-brand-500 transition-colors"><UserIcon size={18} /></span>
+                      {/* REGLA 5: Inputs Burbuja */}
                       <input type="text" required value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} placeholder="Ej. Ricardo Montes" 
-                        // ESTÁNDAR: Input homologado
-                        className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
+                        className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
                     </div>
                   </div>
                   <div className="group">
-                    <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Correo Electrónico</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2 ml-1">Correo Electrónico *</label>
                     <div className="relative">
                       <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none group-focus-within:text-brand-500 transition-colors"><Mail size={18} /></span>
                       <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="ejemplo@rancho.com" 
-                        className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
+                        className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="group">
-                      <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Nombre de Usuario</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2 ml-1">Nombre de Usuario *</label>
                       <div className="relative">
                         <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 font-bold text-sm pointer-events-none group-focus-within:text-brand-500 transition-colors">@</span>
                         <input type="text" required value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} placeholder="usuario" 
-                          className="w-full bg-stone-50 border border-stone-200 p-4 pl-10 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
+                          className="w-full bg-stone-50 border border-stone-200 p-4 pl-10 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
                       </div>
                     </div>
                     <div className="group">
-                      <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 ml-1">Contraseña</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2 ml-1">Contraseña {editingUser ? '' : '*'}</label>
                       <div className="relative">
                         <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none group-focus-within:text-brand-500 transition-colors"><Shield size={18} /></span>
                         <input type="password" required={!editingUser} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder={editingUser ? "••••••••" : "Contraseña"} 
-                          className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
+                          className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-[0.98] border border-stone-200">Cancelar</button>
-                  <button type="submit" disabled={!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim()))} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim())) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600'}`}>
+                  {/* REGLA 6: Botones */}
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-95 border border-stone-200">Cancelar</button>
+                  <button type="submit" disabled={!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim()))} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 ${!(formData.fullName.trim() && formData.email.trim() && formData.username.trim() && (editingUser || formData.password.trim())) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600'}`}>
                     {editingUser ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />}
                     {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                   </button>

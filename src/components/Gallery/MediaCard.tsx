@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Heart, Edit2, Trash2, X } from 'lucide-react';
 import { Media } from '../../types';
@@ -13,6 +13,9 @@ interface MediaCardProps {
 export const MediaCard: React.FC<MediaCardProps> = ({ media, isTall, onEdit, onDelete }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  
+  // Referencia para controlar el video en la miniatura
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Bloquear scroll cuando el preview está abierto
   useEffect(() => {
@@ -24,30 +27,66 @@ export const MediaCard: React.FC<MediaCardProps> = ({ media, isTall, onEdit, onD
     return () => document.body.classList.remove('overflow-hidden');
   }, [showPreview]);
 
+  // Manejadores para el efecto "Hover to Play" (Homologado con ProductCard)
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (media.type === 'video' && videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => console.log("Autoplay prevented:", error));
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    if (media.type === 'video' && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0; // Resetear al primer frame
+    }
+  };
+
   return (
     <>
       {/* --- TARJETA DEL GRID --- */}
       <div 
         onClick={() => setShowPreview(true)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={`relative group cursor-pointer break-inside-avoid overflow-hidden transition-all duration-500 shadow-sm hover:shadow-md border border-stone-200 bg-white rounded-[2rem] ${
           isTall ? 'aspect-[3/4]' : 'aspect-square'
         }`}
       >
+        {/* Icono de Play (Solo visual, desaparece o se mantiene según tu preferencia, aquí lo dejo fijo como indicador) */}
         {media.type === 'video' && (
-          <div className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 shadow-lg pointer-events-none">
+          <div className={`absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 shadow-lg pointer-events-none transition-opacity duration-300 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
             <Play size={16} fill="currentColor" />
           </div>
         )}
 
-        <img 
-          src={media.url} 
-          alt={media.title} 
-          className={`w-full h-full object-cover transition-transform duration-700 ${
-            isHovered ? 'scale-110' : 'scale-100'
-          }`}
-        />
+        {/* Renderizado Condicional: Video vs Imagen */}
+        {media.type === 'video' ? (
+          <video
+            ref={videoRef}
+            src={media.url}
+            poster={media.thumbnail} // Usamos el thumbnail si existe como poster inicial
+            muted
+            loop
+            playsInline
+            preload="metadata" // Importante para cargar el primer frame
+            className={`w-full h-full object-cover transition-transform duration-700 ${
+              isHovered ? 'scale-110' : 'scale-100'
+            }`}
+          />
+        ) : (
+          <img 
+            src={media.url} 
+            alt={media.title} 
+            className={`w-full h-full object-cover transition-transform duration-700 ${
+              isHovered ? 'scale-110' : 'scale-100'
+            }`}
+          />
+        )}
 
         {/* --- CAPA DE INFORMACIÓN (SOLO ESCRITORIO - HOVER) --- */}
         <div className={`hidden lg:flex absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 flex-col justify-end p-6 ${
@@ -113,11 +152,8 @@ export const MediaCard: React.FC<MediaCardProps> = ({ media, isTall, onEdit, onD
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => { setShowPreview(false); onEdit?.(); }}
-                // CORRECCIÓN: 'p-3' se mantiene en todas las pantallas para igualar altura (44px)
-                // 'sm:px-5' extiende el ancho en desktop para el texto.
                 className="p-3 sm:px-5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2 text-xs font-bold"
               >
-                {/* El icono se mantiene en tamaño normal (20px) para no desbalancear la altura */}
                 <Edit2 className="w-5 h-5" />
                 <span className="hidden sm:inline">Editar</span>
               </button>

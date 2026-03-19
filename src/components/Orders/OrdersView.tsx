@@ -41,12 +41,13 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
   return (
     <div className="w-full" ref={ordersTopRef}>
-      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-4">
         {paginatedOrders.map((order, idx) => (
+          // --- CORRECCIÓN: Animación Homologada ---
           <div 
             key={order.id}
-            className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
-            style={{ animationDelay: `${idx * 50}ms` }}
+            className="animate-card-enter"
+            style={{ animationDelay: `${idx * 70}ms` }}
           >
             <OrderCardItem 
               order={order}
@@ -60,7 +61,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         ))}
 
         {orders.length === 0 && (
-          <div className="py-20 text-center">
+          <div className="py-20 text-center animate-in fade-in duration-500">
             <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
               <Package size={40} />
             </div>
@@ -70,7 +71,6 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         )}
       </div>
 
-      {/* Pagination Controls - HOMOLOGADO CON GALLERY (Sin pb-4) */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">

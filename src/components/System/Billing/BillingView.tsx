@@ -1,6 +1,8 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText, Edit2 } from 'lucide-react';
+import { Server, Globe, Wrench, Receipt, Plus, Trash2, CheckCircle2, AlertCircle, DollarSign, Tag, Calendar as CalendarIcon, Pencil, X, Save, Check, ShieldCheck, Box, FileText, Edit2, Loader2 } from 'lucide-react';
+import { AnnualService, ExtraCharge } from '../../../types';
+import { apiBilling } from '../../../api';
 
 export interface BillingViewRef {
   handleSaveConfig: () => void;
@@ -9,25 +11,6 @@ export interface BillingViewRef {
 interface BillingViewProps {
   showToast: (message: string, type?: 'success' | 'error') => void;
   setConfirmDialog: (dialog: any) => void;
-}
-
-interface ExtraCharge {
-  id: string;
-  concept: string;
-  amount: number;
-  status: 'pending' | 'paid';
-  date: string;
-}
-
-interface AnnualService {
-  id: string;
-  concept: string;
-  description: string;
-  amount: number;
-  isPaid: boolean;
-  contractDate: string;
-  dueDate: string;
-  iconType: 'globe' | 'server' | 'wrench' | 'shield' | 'default';
 }
 
 // --- UTILIDADES ---
@@ -53,7 +36,6 @@ const RenderServiceIcon = ({ type, isPaid }: { type: string, isPaid: boolean }) 
 };
 
 // --- COMPONENTES SWIPEABLES ---
-
 interface SwipeableCardProps {
   children: React.ReactNode;
   onEdit: () => void;
@@ -146,7 +128,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}
-        className="relative z-10 bg-white h-full"
+        className="relative z-10 bg-white h-full rounded-[2.5rem]"
       >
         {children}
       </div>
@@ -203,13 +185,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, on
             <button 
               onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
               // ESTÁNDAR: rounded-2xl
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
             >
               {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
             </button>
             <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18} /></button>
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
             </div>
           </div>
         </div>
@@ -256,13 +238,13 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
             <button 
               onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
               // ESTÁNDAR: rounded-2xl
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
             >
               {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
             </button>
             <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18} /></button>
+              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
+              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
             </div>
           </div>
         </div>
@@ -275,36 +257,9 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
 export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
   ({ showToast, setConfirmDialog }, ref) => {
     
-    // ... [Estados iniciales se mantienen igual] ...
-    const [services, setServices] = useState<AnnualService[]>([
-      {
-        id: 'srv-domain', concept: 'Dominio (rancholastrojes.com.mx)', description: '',
-        amount: 727.32, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'globe'
-      },
-      {
-        id: 'srv-hosting', concept: 'Hosting (Servidor Dedicado)', description: '',
-        amount: 3274.59, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'server'
-      },
-      {
-        id: 'srv-ssl', concept: 'Certificado de Seguridad SSL', description: 'Cifrado de datos y candado de seguridad obligatorio para pasarelas de pago y confianza del cliente.',
-        amount: 350.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'shield'
-      },
-      {
-        id: 'srv-maintenance', concept: 'Administración y Mantenimiento', description: 'Respaldo de bases de datos, actualizaciones de seguridad, monitoreo 24/7 y soporte técnico general.',
-        amount: 3500.00, isPaid: false, contractDate: '2025-09-17', dueDate: '2026-09-17', iconType: 'wrench'
-      }
-    ]);
-
-    const [extraCharges, setExtraCharges] = useState<ExtraCharge[]>([
-      {
-        id: 'dev-1', concept: 'Saldo Pendiente: Desarrollo del Sistema', amount: 10000.00,
-        status: 'pending', date: '2025-10-25'
-      },
-      {
-        id: 'dev-google', concept: 'Cuenta de Desarrollador Google Play (Pago Único)', amount: 550.00, 
-        status: 'pending', date: '2025-11-01'
-      }
-    ]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [services, setServices] = useState<AnnualService[]>([]);
+    const [extraCharges, setExtraCharges] = useState<ExtraCharge[]>([]);
 
     const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
     const [editingCharge, setEditingCharge] = useState<ExtraCharge | null>(null);
@@ -312,7 +267,26 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
 
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<AnnualService | null>(null);
-    const [serviceFormData, setServiceFormData] = useState({ concept: '', description: '', amount: '', contractDate: '', dueDate: '' });
+    const [serviceFormData, setServiceFormData] = useState({ concept: '', description: '', amount: '', contractDate: '', dueDate: '', iconType: 'default' });
+
+    // CARGAR DATOS
+    const loadBillingData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await apiBilling.getAll();
+        setServices(data.services);
+        setExtraCharges(data.charges);
+      } catch (error) {
+        console.error("Error cargando facturación:", error);
+        showToast('Error al cargar la información de facturación', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadBillingData();
+    }, []);
 
     useEffect(() => {
       if (isChargeModalOpen || isServiceModalOpen) {
@@ -325,13 +299,16 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       };
     }, [isChargeModalOpen, isServiceModalOpen]);
 
+    // Ojo: En BillingView el "Guardar Configuración" global no aplica porque cada card se guarda individualmente
     useImperativeHandle(ref, () => ({
       handleSaveConfig: () => {
-        showToast('Estado de cuenta y servicios actualizados correctamente', 'success');
+        // Podríamos hacer un refetch aquí por seguridad
+        loadBillingData();
+        showToast('Estado de cuenta actualizado correctamente', 'success');
       }
     }));
 
-    // --- HANDLERS (Iguales a tu versión anterior) ---
+    // --- HANDLERS CARGOS ---
     const handleOpenChargeModal = (charge?: ExtraCharge) => {
       if (charge) {
         setEditingCharge(charge);
@@ -343,27 +320,30 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       setIsChargeModalOpen(true);
     };
 
-    const handleSaveCharge = (e: React.FormEvent) => {
+    const handleSaveCharge = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!chargeFormData.concept.trim() || !chargeFormData.amount) return;
       
-      if (editingCharge) {
-        setExtraCharges(prev => prev.map(c => 
-          c.id === editingCharge.id ? { ...c, concept: chargeFormData.concept, amount: parseFloat(chargeFormData.amount) } : c
-        ));
-        showToast('Cargo actualizado correctamente');
-      } else {
-        const newCharge: ExtraCharge = {
-          id: `charge-${Date.now()}`,
+      try {
+        const payload = {
           concept: chargeFormData.concept,
           amount: parseFloat(chargeFormData.amount),
-          status: 'pending',
-          date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split('T')[0] // Solo se usa al crear
         };
-        setExtraCharges([newCharge, ...extraCharges]);
-        showToast('Cargo extra añadido a la cuenta');
+
+        if (editingCharge) {
+          await apiBilling.updateCharge(editingCharge.id, payload);
+          showToast('Cargo actualizado correctamente');
+        } else {
+          await apiBilling.createCharge(payload);
+          showToast('Cargo extra añadido a la cuenta');
+        }
+        
+        loadBillingData();
+        setIsChargeModalOpen(false);
+      } catch (error) {
+        showToast('Error al guardar el cargo', 'error');
       }
-      setIsChargeModalOpen(false);
     };
 
     const removeCharge = (id: string) => {
@@ -373,54 +353,75 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
         message: 'Esta acción eliminará el cargo de la cuenta permanentemente.',
         confirmLabel: 'Sí, Eliminar',
         variant: 'danger',
-        onConfirm: () => {
-          setExtraCharges(prev => prev.filter(c => c.id !== id));
-          showToast('Cargo eliminado');
+        onConfirm: async () => {
+          try {
+            await apiBilling.deleteCharge(id);
+            setExtraCharges(prev => prev.filter(c => c.id !== id));
+            showToast('Cargo eliminado');
+          } catch (error) {
+            showToast('Error al eliminar cargo', 'error');
+          }
           setConfirmDialog({ isOpen: false });
         }
       });
     };
 
-    const toggleChargeStatus = (id: string) => {
-      setExtraCharges(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'pending' ? 'paid' : 'pending' } : c));
+    const toggleChargeStatus = async (id: string) => {
+      const charge = extraCharges.find(c => c.id === id);
+      if (!charge) return;
+      
+      try {
+        const newStatus = charge.status === 'pending' ? true : false;
+        await apiBilling.toggleCharge(id, newStatus);
+        setExtraCharges(prev => prev.map(c => c.id === id ? { ...c, status: newStatus ? 'paid' : 'pending' } : c));
+        showToast('Estado actualizado');
+      } catch (error) {
+        showToast('Error al actualizar estado', 'error');
+      }
     };
 
+    // --- HANDLERS SERVICIOS ---
     const handleOpenServiceModal = (service?: AnnualService) => {
       if (service) {
         setEditingService(service);
         setServiceFormData({ 
           concept: service.concept, description: service.description, amount: service.amount.toString(), 
-          contractDate: service.contractDate, dueDate: service.dueDate 
+          contractDate: service.contractDate, dueDate: service.dueDate, iconType: service.iconType 
         });
       } else {
         setEditingService(null);
-        setServiceFormData({ concept: '', description: '', amount: '', contractDate: '', dueDate: '' });
+        setServiceFormData({ concept: '', description: '', amount: '', contractDate: '', dueDate: '', iconType: 'default' });
       }
       setIsServiceModalOpen(true);
     };
 
-    const handleSaveService = (e: React.FormEvent) => {
+    const handleSaveService = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!serviceFormData.concept.trim() || !serviceFormData.amount) return;
       
-      if (editingService) {
-        setServices(prev => prev.map(s => 
-          s.id === editingService.id ? { 
-            ...s, concept: serviceFormData.concept, description: serviceFormData.description, 
-            amount: parseFloat(serviceFormData.amount), contractDate: serviceFormData.contractDate, dueDate: serviceFormData.dueDate 
-          } : s
-        ));
-        showToast('Servicio actualizado correctamente');
-      } else {
-        const newService: AnnualService = {
-          id: `srv-${Date.now()}`,
-          concept: serviceFormData.concept, description: serviceFormData.description, amount: parseFloat(serviceFormData.amount),
-          isPaid: false, contractDate: serviceFormData.contractDate, dueDate: serviceFormData.dueDate, iconType: 'default'
+      try {
+        const payload = {
+          concept: serviceFormData.concept,
+          description: serviceFormData.description,
+          amount: parseFloat(serviceFormData.amount),
+          contractDate: serviceFormData.contractDate,
+          dueDate: serviceFormData.dueDate,
+          iconType: serviceFormData.iconType
         };
-        setServices([...services, newService]);
-        showToast('Servicio anual añadido');
+
+        if (editingService) {
+          await apiBilling.updateService(editingService.id, payload);
+          showToast('Servicio actualizado correctamente');
+        } else {
+          await apiBilling.createService(payload);
+          showToast('Servicio anual añadido');
+        }
+
+        loadBillingData();
+        setIsServiceModalOpen(false);
+      } catch (error) {
+        showToast('Error al guardar el servicio', 'error');
       }
-      setIsServiceModalOpen(false);
     };
 
     const removeService = (id: string) => {
@@ -430,16 +431,31 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
         message: 'El servicio será eliminado del plan anual. Esta acción no se puede deshacer.',
         confirmLabel: 'Sí, Eliminar',
         variant: 'danger',
-        onConfirm: () => {
-          setServices(prev => prev.filter(s => s.id !== id));
-          showToast('Servicio eliminado');
+        onConfirm: async () => {
+          try {
+            await apiBilling.deleteService(id);
+            setServices(prev => prev.filter(s => s.id !== id));
+            showToast('Servicio eliminado');
+          } catch (error) {
+            showToast('Error al eliminar servicio', 'error');
+          }
           setConfirmDialog({ isOpen: false });
         }
       });
     };
 
-    const toggleServiceStatus = (id: string) => {
-      setServices(prev => prev.map(s => s.id === id ? { ...s, isPaid: !s.isPaid } : s));
+    const toggleServiceStatus = async (id: string) => {
+      const service = services.find(s => s.id === id);
+      if (!service) return;
+
+      try {
+        const newStatus = !service.isPaid;
+        await apiBilling.toggleService(id, newStatus);
+        setServices(prev => prev.map(s => s.id === id ? { ...s, isPaid: newStatus } : s));
+        showToast('Estado actualizado');
+      } catch (error) {
+        showToast('Error al actualizar estado', 'error');
+      }
     };
 
     const totalPendingFixed = services.filter(s => !s.isPaid).reduce((acc, curr) => acc + curr.amount, 0);
@@ -451,8 +467,17 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
       ? unpaidServices.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0].dueDate 
       : null;
 
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-32">
+           <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+           <p className="text-stone-500 font-medium">Cargando estado de cuenta...</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 pb-12">
+      <div className="space-y-8 pb-12">
         
         {/* Banner de Resumen: rounded-[2.5rem] */}
         <div className={`p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl text-white transition-all duration-500
@@ -571,8 +596,24 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsServiceModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveService} className="space-y-6">
-                  {/* ... Inputs de Servicio (rounded-2xl y border-stone-200) ... */}
                   <div className="space-y-4">
+                    
+                    {/* Select Icono (NUEVO) */}
+                    <div className="group space-y-2">
+                      <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Icono representativo</label>
+                      <select 
+                        value={serviceFormData.iconType} 
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, iconType: e.target.value })}
+                        className="w-full bg-stone-50 border border-stone-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-2xl p-4 outline-none transition-all font-bold text-stone-700 shadow-sm"
+                      >
+                        <option value="default">Por defecto (Caja)</option>
+                        <option value="globe">Globo (Dominio / Web)</option>
+                        <option value="server">Servidor (Hosting)</option>
+                        <option value="shield">Escudo (Seguridad / SSL)</option>
+                        <option value="wrench">Herramienta (Mantenimiento)</option>
+                      </select>
+                    </div>
+
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Servicio</label>
                       <div className="relative">
@@ -611,8 +652,8 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                     </div>
                   </div>
                   <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setIsServiceModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200">Cancelar</button>
-                    <button type="submit" disabled={!(serviceFormData.concept.trim() && serviceFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${!(serviceFormData.concept.trim() && serviceFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
+                    <button type="button" onClick={() => setIsServiceModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200 active:scale-95">Cancelar</button>
+                    <button type="submit" disabled={!(serviceFormData.concept.trim() && serviceFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 ${!(serviceFormData.concept.trim() && serviceFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
                       {editingService ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />} {editingService ? 'Guardar' : 'Añadir'}
                     </button>
                   </div>
@@ -635,7 +676,6 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   <button onClick={() => setIsChargeModalOpen(false)} className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors active:scale-90"><X size={20} strokeWidth={3} /></button>
                 </div>
                 <form onSubmit={handleSaveCharge} className="space-y-6">
-                  {/* ... Inputs de Cargo ... */}
                   <div className="space-y-4">
                     <div className="group space-y-2">
                       <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Concepto del Cargo</label>
@@ -655,8 +695,8 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                     </div>
                   </div>
                   <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setIsChargeModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200">Cancelar</button>
-                    <button type="submit" disabled={!(chargeFormData.concept.trim() && chargeFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${!(chargeFormData.concept.trim() && chargeFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
+                    <button type="button" onClick={() => setIsChargeModalOpen(false)} className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all border border-stone-200 active:scale-95">Cancelar</button>
+                    <button type="submit" disabled={!(chargeFormData.concept.trim() && chargeFormData.amount)} className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 ${!(chargeFormData.concept.trim() && chargeFormData.amount) ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg hover:bg-brand-600'}`}>
                       {editingCharge ? <Save size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />} {editingCharge ? 'Guardar' : 'Añadir'}
                     </button>
                   </div>

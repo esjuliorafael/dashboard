@@ -1,63 +1,71 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Edit2, Trash2, Search, Tag, Plus, X, Check, CornerDownRight, Layers } from 'lucide-react';
+import { Edit2, Trash2, Search, Plus, X, Check, CornerDownRight, Layers, Loader2 } from 'lucide-react';
+import { apiCategories } from '../../api';
+import { Category, Subcategory } from '../../types';
+import { CategoryCard } from './CategoryCard';
 
-interface SubcategoryItem {
-  id: string;
-  name: string;
-  count: number;
-}
-
-interface CategoryItem {
-  id: string;
-  name: string;
-  count: number;
-  subcategories: SubcategoryItem[];
-}
-
-interface CategoryListProps {
+interface CategoryViewProps {
   searchQuery: string;
-  onEdit: (category: {id: string, name: string}) => void;
-  onDelete: (id: string) => void;
+  onEdit: (category: Category) => void;
+  onDelete?: (id: string) => void;
   showToast: (message: string, type?: 'success' | 'error') => void;
   setConfirmDialog: (dialog: any) => void;
 }
 
-const MOCK_DATA: CategoryItem[] = [
-  { 
-    id: '1', name: 'Paisajes', count: 42, 
-    subcategories: [
-      { id: '1-1', name: 'Atardeceres', count: 18 },
-      { id: '1-2', name: 'Amaneceres', count: 12 },
-      { id: '1-3', name: 'Drone', count: 12 }
-    ] 
-  },
-  { 
-    id: '2', name: 'Cultura', count: 128,
-    subcategories: [
-      { id: '2-1', name: 'Gastronomía', count: 45 },
-      { id: '2-2', name: 'Mezcal', count: 83 }
-    ]
-  },
-  { id: '3', name: 'Ganado', count: 85, subcategories: [] },
-  { id: '4', name: 'Eventos', count: 31, subcategories: [] },
-  { id: '5', name: 'Actividades', count: 56, subcategories: [] },
-  { id: '6', name: 'Instalaciones', count: 19, subcategories: [] },
-  { id: '7', name: 'Campo', count: 74, subcategories: [] },
-  { id: '8', name: 'Tienda', count: 22, subcategories: [] },
-];
-
-export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit, onDelete, showToast, setConfirmDialog }) => {
-  const [activeManagerCat, setActiveManagerCat] = useState<CategoryItem | null>(null);
+export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit, showToast, setConfirmDialog }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [activeManagerCat, setActiveManagerCat] = useState<Category | null>(null);
   const [managerView, setManagerView] = useState<'list' | 'form'>('list');
-  const [editingSub, setEditingSub] = useState<SubcategoryItem | null>(null);
+  const [editingSub, setEditingSub] = useState<Subcategory | null>(null);
   const [subNameInput, setSubNameInput] = useState('');
+  const [isSavingSub, setIsSavingSub] = useState(false);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await apiCategories.getAll();
+      setCategories(data);
+      return data;
+    } catch (error) {
+      console.error("Error cargando categorías", error);
+      showToast('Error al cargar categorías', 'error');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleDeleteCategory = (id: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: '¿Eliminar Categoría?',
+      message: 'Esta acción eliminará la categoría y todas sus subcategorías. Los medios asociados quedarán sin clasificar.',
+      confirmLabel: 'Sí, Eliminar',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await apiCategories.delete(id);
+          setCategories(prev => prev.filter(c => c.id !== id));
+          showToast('Categoría eliminada correctamente');
+        } catch (error) {
+          showToast('Error al eliminar categoría', 'error');
+        }
+        setConfirmDialog({ isOpen: false });
+      }
+    });
+  };
 
   const filtered = useMemo(() => {
-    return MOCK_DATA.filter(c => 
+    return categories.filter(c => 
       c.name.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.name.localeCompare(b.name));
-  }, [searchQuery]);
+  }, [searchQuery, categories]);
 
   useEffect(() => {
     if (activeManagerCat) {
@@ -70,7 +78,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     };
   }, [activeManagerCat]);
 
-  const openManager = (cat: CategoryItem, startWithForm = false) => {
+  const openManager = (cat: Category, startWithForm = false) => {
     setActiveManagerCat(cat);
     if (startWithForm) {
       setManagerView('form');
@@ -88,111 +96,116 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
     setSubNameInput('');
   };
 
-  const handleSubSubmit = () => {
-    if (!subNameInput.trim()) return;
-    if (editingSub) {
-      console.log(`Edit sub ${editingSub.id} to ${subNameInput}`);
-      showToast('Subcategoría actualizada');
-    } else {
-      console.log(`Create sub ${subNameInput} in ${activeManagerCat?.id}`);
-      showToast('Subcategoría creada con éxito');
+  const handleSaveSubcategory = async () => {
+    if (!subNameInput.trim() || !activeManagerCat) return;
+    setIsSavingSub(true);
+
+    try {
+      const currentSubs = activeManagerCat.subcategorias 
+        ? activeManagerCat.subcategorias.map(s => s.nombre) 
+        : [];
+
+      let updatedSubs = [...currentSubs];
+
+      if (editingSub) {
+        const index = activeManagerCat.subcategorias?.findIndex(s => s.id === editingSub.id);
+        if (index !== undefined && index !== -1) {
+          updatedSubs[index] = subNameInput.trim();
+        }
+      } else {
+        updatedSubs.push(subNameInput.trim());
+      }
+
+      await apiCategories.update(activeManagerCat.id, {
+        nombre: activeManagerCat.name,
+        icono: activeManagerCat.icon,
+        subcategorias: updatedSubs
+      });
+
+      const newCategories = await fetchCategories();
+      const updatedCat = newCategories.find(c => c.id === activeManagerCat.id);
+      if (updatedCat) {
+        setActiveManagerCat(updatedCat);
+      }
+
+      showToast(editingSub ? 'Subcategoría actualizada' : 'Subcategoría creada con éxito', 'success');
+      setManagerView('list');
+      setEditingSub(null);
+      setSubNameInput('');
+
+    } catch (error) {
+      console.error(error);
+      showToast('Error al guardar subcategoría', 'error');
+    } finally {
+      setIsSavingSub(false);
     }
-    setManagerView('list');
-    setEditingSub(null);
-    setSubNameInput('');
   };
 
-  const startEditSub = (sub: SubcategoryItem) => {
+  const startEditSub = (sub: Subcategory) => {
     setEditingSub(sub);
-    setSubNameInput(sub.name);
+    setSubNameInput(sub.nombre);
     setManagerView('form');
   };
 
-  const handleDeleteSub = (id: string) => {
+  const handleDeleteSub = (idToDelete: string) => {
     setConfirmDialog({
       isOpen: true,
       title: '¿Eliminar subcategoría?',
       message: 'Esta acción desvinculará los medios asociados pero no los eliminará.',
       confirmLabel: 'Eliminar',
       variant: 'danger',
-      onConfirm: () => {
-        console.log('Delete sub:', id);
-        showToast('Subcategoría eliminada');
-        setConfirmDialog({ isOpen: false });
+      onConfirm: async () => {
+        if (!activeManagerCat) return;
+        
+        try {
+          const updatedSubs = activeManagerCat.subcategorias
+            ?.filter(s => s.id !== idToDelete)
+            .map(s => s.nombre) || [];
+
+          await apiCategories.update(activeManagerCat.id, {
+            nombre: activeManagerCat.name,
+            icono: activeManagerCat.icon,
+            subcategorias: updatedSubs
+          });
+
+          const newCategories = await fetchCategories();
+          const updatedCat = newCategories.find(c => c.id === activeManagerCat.id);
+          if (updatedCat) setActiveManagerCat(updatedCat);
+
+          showToast('Subcategoría eliminada', 'success');
+          setConfirmDialog({ isOpen: false });
+        } catch (error) {
+          showToast('Error al eliminar subcategoría', 'error');
+        }
       }
     });
   };
 
+  if (loading && categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32">
+         <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+         <p className="text-stone-500 font-medium">Cargando categorías...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
-      {/* Grid of Main Categories */}
+    <div className="w-full">
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filtered.map((cat, idx) => (
-            <div 
-              key={cat.id} 
-              // ESTÁNDAR APLICADO: rounded-[2.5rem], border-stone-200, hover:shadow-md (sin translate)
-              className="flex flex-col bg-white p-6 sm:p-7 rounded-[2.5rem] shadow-sm border border-stone-200 hover:shadow-md transition-all duration-500 animate-in fade-in zoom-in-95 group"
-              style={{ animationDelay: `${idx * 40}ms` }}
+            <div
+              key={cat.id}
+              className="animate-card-enter"
+              style={{ animationDelay: `${idx * 70}ms` }}
             >
-              <div className="flex items-center justify-between mb-5">
-                <div className="p-3.5 bg-brand-50 text-brand-500 rounded-2xl group-hover:bg-brand-500 group-hover:text-white transition-colors duration-300 shadow-sm">
-                  <Tag size={22} />
-                </div>
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <button 
-                    onClick={() => onEdit({id: cat.id, name: cat.name})}
-                    // ESTÁNDAR APLICADO: rounded-2xl
-                    className="p-2.5 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-2xl transition-colors active:scale-90"
-                    title="Editar Categoría"
-                  >
-                    <Edit2 size={16} strokeWidth={2.5} />
-                  </button>
-                  <button 
-                    onClick={() => onDelete(cat.id)}
-                    className="p-2.5 bg-stone-50 hover:bg-rose-50 hover:text-rose-600 text-stone-600 rounded-2xl transition-colors active:scale-90"
-                    title="Eliminar Categoría"
-                  >
-                    <Trash2 size={16} strokeWidth={2.5} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <h4 className="font-black text-stone-800 text-lg sm:text-xl tracking-tight truncate leading-tight">
-                  {cat.name}
-                </h4>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-stone-100 rounded-lg">
-                    <span className="text-[10px] font-black text-stone-600 uppercase tracking-widest leading-none">
-                      {cat.count} medios
-                    </span>
-                  </div>
-                  <span className="w-1 h-1 rounded-full bg-stone-200" />
-                  <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
-                    {cat.subcategories.length} subgrupos
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mt-8">
-                <button 
-                  onClick={() => openManager(cat)}
-                  // ESTÁNDAR APLICADO: border-stone-200
-                  className="px-4 py-3 bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-stone-200"
-                >
-                  <Layers size={14} />
-                  Ver Subs
-                </button>
-                <button 
-                  onClick={() => openManager(cat, true)}
-                  // ESTÁNDAR APLICADO: border-brand-200/50 (variante brand pero sólida)
-                  className="px-4 py-3 bg-brand-50 hover:bg-brand-100 text-brand-600 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-brand-100/50"
-                >
-                  <Plus size={14} strokeWidth={3} />
-                  Nueva Sub
-                </button>
-              </div>
+              <CategoryCard
+                category={cat}
+                onEdit={onEdit}
+                onDelete={handleDeleteCategory}
+                onManage={openManager}
+              />
             </div>
           ))}
         </div>
@@ -206,7 +219,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
         </div>
       )}
 
-      {/* Subcategory Manager */}
+      {/* Subcategory Manager Portal */}
       {activeManagerCat && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-300">
           <div 
@@ -214,14 +227,24 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
             onClick={closeManager}
           />
           
-          <div className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh] sm:max-h-[80vh] animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500">
+          <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500">
             
             <div className="px-8 pt-8 pb-6 border-b border-stone-100 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">Subcategorías</span>
+                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">
+                    {managerView === 'list' 
+                      ? 'Subcategorías' 
+                      : editingSub 
+                        ? 'Editar Subcategoría' 
+                        : 'Nueva Subcategoría'
+                    }
+                  </span>
                   <h3 className="text-xl sm:text-2xl font-black text-stone-800 tracking-tight leading-none">
-                    {activeManagerCat.name}
+                    {managerView === 'list' 
+                      ? activeManagerCat.name 
+                      : `En ${activeManagerCat.name}`
+                    }
                   </h3>
                 </div>
                 <button 
@@ -236,11 +259,10 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
             {managerView === 'list' && (
               <>
                 <div className="flex-1 overflow-y-auto p-8 space-y-3 no-scrollbar">
-                  {activeManagerCat.subcategories.length > 0 ? (
-                    activeManagerCat.subcategories.map((sub, sidx) => (
+                  {activeManagerCat.subcategorias && activeManagerCat.subcategorias.length > 0 ? (
+                    activeManagerCat.subcategorias.map((sub, sidx) => (
                       <div 
                         key={sub.id} 
-                        // ESTÁNDAR APLICADO: border-stone-200
                         className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200 hover:border-brand-200 hover:bg-white transition-all duration-300 animate-in fade-in slide-in-from-left-4 shadow-sm hover:shadow-md"
                         style={{ animationDelay: `${sidx * 40}ms` }}
                       >
@@ -249,14 +271,13 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                             <CornerDownRight size={14} strokeWidth={3} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-bold text-stone-800">{sub.name}</span>
-                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest">{sub.count} medios asociados</span>
+                            <span className="text-sm font-bold text-stone-800">{sub.nombre}</span>
+                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest">0 medios asociados</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => startEditSub(sub)}
-                            // ESTÁNDAR APLICADO: rounded-2xl
                             className="p-2.5 text-stone-400 hover:text-brand-600 hover:bg-brand-50 rounded-2xl transition-all active:scale-90"
                           >
                             <Edit2 size={16} strokeWidth={2.5} />
@@ -296,7 +317,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
             {managerView === 'form' && (
               <div className="flex-1 overflow-y-auto p-8 animate-in fade-in slide-in-from-right-10 duration-500">
                 <form 
-                  onSubmit={(e) => { e.preventDefault(); handleSubSubmit(); }}
+                  onSubmit={(e) => { e.preventDefault(); handleSaveSubcategory(); }}
                   className="space-y-6"
                 >
                   <div className="space-y-2.5">
@@ -309,7 +330,6 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                       value={subNameInput}
                       autoFocus
                       onChange={(e) => setSubNameInput(e.target.value)}
-                      // ESTÁNDAR APLICADO: border-stone-200
                       className="w-full bg-stone-50 border border-stone-200 p-4 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                     />
                   </div>
@@ -318,20 +338,25 @@ export const CategoryList: React.FC<CategoryListProps> = ({ searchQuery, onEdit,
                     <button 
                       type="button"
                       onClick={() => setManagerView('list')}
-                      // ESTÁNDAR APLICADO: border-stone-200
                       className="flex-1 py-4 bg-stone-50 text-stone-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-100 transition-all active:scale-[0.98] border border-stone-200"
                     >
                       Cancelar
                     </button>
                     <button 
                       type="submit"
-                      disabled={!subNameInput.trim()}
+                      disabled={!subNameInput.trim() || isSavingSub}
                       className={`flex-[2] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2
                         ${!subNameInput.trim() ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600'}
                       `}
                     >
-                      <Check size={16} strokeWidth={3} />
-                      {editingSub ? 'Guardar Cambios' : 'Crear Subcategoría'}
+                      {isSavingSub ? (
+                        <span className="animate-pulse">Guardando...</span>
+                      ) : (
+                        <>
+                          <Check size={16} strokeWidth={3} />
+                          {editingSub ? 'Guardar Cambios' : 'Crear Subcategoría'}
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

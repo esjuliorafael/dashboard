@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw } from 'lucide-react';
+import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw, Plus } from 'lucide-react';
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
@@ -9,7 +9,6 @@ import { LatestMedia } from './components/Widgets/LatestMedia';
 import { LatestProducts } from './components/Widgets/LatestProducts';
 import { CategoryWidget } from './components/Widgets/CategoryWidget';
 import { GalleryWidget } from './components/Widgets/GalleryWidget';
-// NUEVOS IMPORTS: Widgets Atómicos
 import { ActiveProductsWidget } from './components/Widgets/ActiveProductsWidget';
 import { PaidOrdersWidget } from './components/Widgets/PaidOrdersWidget';
 import { PendingOrdersWidget } from './components/Widgets/PendingOrdersWidget';
@@ -27,77 +26,8 @@ import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/What
 import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
 import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
-import { Order, Media } from './types';
-
-// Mock Data
-const initialOrders: Order[] = [
-  { 
-    id: 'ORD-001', 
-    customer: 'Maria González', 
-    customerPhone: '555-0123', 
-    customerState: 'Jalisco', 
-    customerAddress: 'Av. Vallarta 1234, Col. Americana, Guadalajara', 
-    items: [
-      { id: 'item-1', name: 'Gallo de Combate Kelso', type: 'ave', price: 800, quantity: 1 },
-      { id: 'item-2', name: 'Alimento Premium 20kg', type: 'articulo', price: 450, quantity: 1 }
-    ],
-    total: 1250, 
-    status: 'paid', 
-    date: '2023-10-25' 
-  },
-  { 
-    id: 'ORD-002', 
-    customer: 'Juan Perez', 
-    customerPhone: '555-4567', 
-    customerState: 'Querétaro', 
-    customerAddress: 'Calle Corregidora 56, Centro, Querétaro', 
-    items: [
-      { id: 'item-3', name: 'Polla de Cría Hatch', type: 'ave', price: 850, quantity: 1 }
-    ],
-    total: 850, 
-    status: 'pending', 
-    date: '2023-10-25' 
-  },
-  { 
-    id: 'ORD-003', 
-    customer: 'Ana López', 
-    customerPhone: '555-8901', 
-    customerState: 'Nuevo León', 
-    customerAddress: 'Paseo de los Leones 789, Cumbres, Monterrey', 
-    items: [
-      { id: 'item-4', name: 'Kit Básico Rancho', type: 'articulo', price: 3200, quantity: 1 }
-    ],
-    total: 3200, 
-    status: 'paid', 
-    date: '2023-10-24' 
-  },
-  { 
-    id: 'ORD-004', 
-    customer: 'Carlos Ruiz', 
-    customerPhone: '555-2345', 
-    customerState: 'Veracruz', 
-    customerAddress: 'Av. Independencia 432, Centro, Veracruz', 
-    items: [
-      { id: 'item-5', name: 'Accesorio de Cuero', type: 'articulo', price: 450, quantity: 1 }
-    ],
-    total: 450, 
-    status: 'cancelled', 
-    date: '2023-10-23' 
-  },
-  { 
-    id: 'ORD-005', 
-    customer: 'Sofía Díaz', 
-    customerPhone: '555-6789', 
-    customerState: 'Yucatán', 
-    customerAddress: 'Calle 60 #456, Centro, Mérida', 
-    items: [
-      { id: 'item-6', name: 'Set de Regalo', type: 'articulo', price: 1800, quantity: 1 }
-    ],
-    total: 1800, 
-    status: 'paid', 
-    date: '2023-10-23' 
-  },
-];
+import { Order } from './types';
+import { apiOrders } from './api';
 
 // Reusable Components within App context
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
@@ -198,7 +128,7 @@ function App() {
   const billingRef = React.useRef<BillingViewRef>(null);
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -210,6 +140,19 @@ function App() {
     onConfirm: () => void,
     variant?: 'danger' | 'warning'
   }>({ isOpen: false, title: '', message: '', confirmLabel: '', onConfirm: () => {} });
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const data = await apiOrders.getAll();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error cargando órdenes:", error);
+        showToast("Error al conectar con la base de datos", "error");
+      }
+    };
+    fetchOrders();
+  }, []);
 
   useEffect(() => {
     if (confirmDialog.isOpen) {
@@ -276,15 +219,20 @@ function App() {
     setConfirmDialog({
       isOpen: true,
       title: '¿Cancelar Orden?',
-      message: `¿Estás seguro de que deseas cancelar la orden ${orderId}? Esta acción no se puede deshacer.`,
+      message: `¿Estás seguro de que deseas cancelar la orden ${orderId}? Esta acción devolverá el stock al inventario.`,
       confirmLabel: 'Sí, Cancelar',
       variant: 'danger',
-      onConfirm: () => {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
-        if (selectedOrder?.id === orderId) {
-          setSelectedOrder(prev => prev ? { ...prev, status: 'cancelled' } : null);
+      onConfirm: async () => {
+        try {
+          await apiOrders.cancel(orderId);
+          setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+          if (selectedOrder?.id === orderId) {
+            setSelectedOrder(prev => prev ? { ...prev, status: 'cancelled' } : null);
+          }
+          showToast(`Orden ${orderId} cancelada y stock restaurado`, 'success');
+        } catch (error) {
+          showToast("Error al cancelar la orden en el servidor", "error");
         }
-        showToast(`Orden ${orderId} cancelada`, 'error');
         closeConfirm();
       }
     });
@@ -373,14 +321,15 @@ function App() {
   };
 
   return (
-    // ACTUALIZADO: pb-32 para dar aire suficiente en móvil, md:pb-10 en desktop
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-32 md:pb-10 text-stone-900">
       <Header activeTab={activeTab} setActiveTab={(tab) => {
-        setActiveTab(tab);
-        setSearchQuery('');
-        if (tab === 'Galería') setGalleryViewMode('list');
-        if (tab === 'Tienda') setStoreViewMode('list');
-        if (tab === 'Órdenes') setOrdersViewMode('list');
+        if (tab !== activeTab) {
+          setActiveTab(tab);
+          setSearchQuery('');
+          if (tab === 'Galería') setGalleryViewMode('list');
+          if (tab === 'Tienda') setStoreViewMode('list');
+          if (tab === 'Órdenes') setOrdersViewMode('list');
+        }
       }} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -619,11 +568,11 @@ function App() {
                       Cancelar
                     </button>
                     <button 
-                      onClick={() => paymentRef.current?.handleSaveChannels()}
+                      onClick={() => paymentRef.current?.handleCreateChannel()}
                       className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
                     >
-                      <Save size={18} className="text-stone-400" />
-                      Guardar Canales
+                      <Plus size={18} className="text-stone-400" />
+                      Añadir Canal
                     </button>
                   </>
                 ) : (
@@ -648,11 +597,11 @@ function App() {
                       Cancelar
                     </button>
                     <button 
-                      onClick={() => whatsappRef.current?.handleSaveChannels()}
+                      onClick={() => whatsappRef.current?.handleCreateChannel()}
                       className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
                     >
-                      <Save size={18} className="text-stone-400" />
-                      Guardar Canales
+                      <Plus size={18} className="text-stone-400" />
+                      Añadir Canal
                     </button>
                   </>
                 ) : (
@@ -687,12 +636,13 @@ function App() {
               </div>
             ) : (isSystemMode && systemViewMode === 'billing') ? (
               <div className="flex gap-3">
+                {/* AÑADIDO: Lógica para abrir el modal de cargos extra desde la barra principal */}
                 <button 
-                  onClick={() => billingRef.current?.handleSaveConfig()}
-                  className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
+                  onClick={() => billingRef.current?.handleCreateCharge()}
+                  className="bg-stone-900 px-6 py-3.5 rounded-full shadow-sm border border-stone-800 flex items-center gap-2 text-white font-bold text-sm hover:bg-stone-800 transition-all active:scale-95"
                 >
-                  <Save size={18} className="text-stone-400" />
-                  Guardar Estado de Cuenta
+                  <Plus size={18} className="text-stone-400" />
+                  Añadir Cargo Extra
                 </button>
               </div>
             ) : (isSystemMode && systemViewMode === 'identity') ? (
@@ -755,7 +705,7 @@ function App() {
 
           <div className="flex-1">
             {isGalleryMode ? (
-              <div key={galleryViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <GalleryView 
                   searchQuery={searchQuery} 
                   viewMode={galleryViewMode} 
@@ -766,7 +716,7 @@ function App() {
                 />
               </div>
             ) : isStoreMode ? (
-               <div key={storeViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <StoreView 
                   searchQuery={searchQuery} 
                   viewMode={storeViewMode} 
@@ -793,7 +743,7 @@ function App() {
                 />
               )
             ) : isSystemMode ? (
-              <div key={systemViewMode} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {systemViewMode === 'shipping' ? (
                   <ShippingView 
                     ref={shippingRef}
@@ -820,14 +770,16 @@ function App() {
                     ref={paymentRef} 
                     subView={paymentSubView}
                     setSubView={setPaymentSubView}
-                    showToast={showToast} 
+                    showToast={showToast}
+                    setConfirmDialog={setConfirmDialog} 
                   />
                 ) : systemViewMode === 'whatsapp' ? (
                   <WhatsAppView 
                     ref={whatsappRef} 
                     subView={whatsappSubView}
                     setSubView={setWhatsappSubView}
-                    showToast={showToast} 
+                    showToast={showToast}
+                    setConfirmDialog={setConfirmDialog} 
                   />
                 ) : systemViewMode === 'inventory' ? (
                   <InventorySettingsView 

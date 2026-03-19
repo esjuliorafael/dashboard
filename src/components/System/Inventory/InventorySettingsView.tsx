@@ -1,5 +1,6 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Timer, Info, RotateCcw } from 'lucide-react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { Timer, Info, RotateCcw, Loader2 } from 'lucide-react';
+import { apiSystem } from '../../../api';
 
 export interface InventorySettingsViewRef {
   handleSaveConfig: () => void;
@@ -12,25 +13,76 @@ interface InventorySettingsViewProps {
 export const InventorySettingsView = forwardRef<InventorySettingsViewRef, InventorySettingsViewProps>(
   ({ showToast }, ref) => {
     
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Estado local para los valores del formulario
     const [config, setConfig] = useState({
       active: true,
       hours: 24
     });
 
+    // 1. Cargar datos al montar el componente
+    useEffect(() => {
+      const loadConfig = async () => {
+        setIsLoading(true);
+        try {
+          const data = await apiSystem.getConfig();
+          setConfig({
+            // El backend devuelve strings. Mapeamos a boolean y number
+            active: data['inventario_liberacion_activa'] === '1',
+            hours: Number(data['inventario_horas_limite'] || 24)
+          });
+        } catch (error) {
+          console.error("Error cargando configuración de inventario", error);
+          showToast('Error al cargar la configuración actual', 'error');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadConfig();
+    }, []);
+
+    // 2. Guardar datos (expuesto al App.tsx)
     useImperativeHandle(ref, () => ({
-      handleSaveConfig: () => {
+      handleSaveConfig: async () => {
+        // Validación local
         if (config.active && (!config.hours || config.hours <= 0)) {
           showToast('Por favor ingresa un número de horas válido mayor a 0.', 'error');
           return;
         }
-        showToast('Configuración de liberación guardada correctamente', 'success');
+
+        if (isSaving) return;
+        setIsSaving(true);
+
+        try {
+          await apiSystem.updateConfig({
+            'inventario_liberacion_activa': config.active,
+            'inventario_horas_limite': config.hours
+          });
+          showToast('Configuración de liberación guardada correctamente', 'success');
+        } catch (error) {
+          showToast('Error al guardar la configuración', 'error');
+        } finally {
+          setIsSaving(false);
+        }
       }
     }));
 
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-32">
+           <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+           <p className="text-stone-500 font-medium">Cargando ajustes de inventario...</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+      <div className="space-y-8">
         
-        {/* Banner Info: rounded-[2rem], border-brand-100 (se mantiene semántico) */}
+        {/* Banner Info: rounded-[2rem], border-brand-100 */}
         <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
           <div className="text-brand-500 mt-1 shrink-0"><Info size={24} /></div>
           <div>

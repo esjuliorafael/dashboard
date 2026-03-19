@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Info } from 'lucide-react';
+import { Info, Check } from 'lucide-react';
+import { apiCategories } from '../../api'; // Importamos la API
+import { Category } from '../../types';
 
 interface CategoryFormProps {
-  initialData?: { id: string; name: string };
+  // Ajustamos initialData para que pueda recibir el objeto completo, incluyendo subcategorias
+  initialData?: Category; 
   onCancel: () => void;
   onSave: () => void;
   onValidationChange?: (isValid: boolean) => void;
@@ -26,15 +29,41 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ initialData, onCance
     return () => onValidationChange?.(false);
   }, [onValidationChange]);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || isSubmitting) return;
     
     setIsSubmitting(true);
-    setTimeout(() => {
-      onSave();
+
+    try {
+      if (initialData) {
+        // MODO EDICIÓN:
+        // CRUCIAL: Rescatar las subcategorías existentes para no borrarlas al editar el nombre
+        const existingSubNames = initialData.subcategorias 
+          ? initialData.subcategorias.map(s => s.nombre) 
+          : [];
+
+        await apiCategories.update(initialData.id, {
+          nombre: name.trim(),
+          icono: initialData.icon || 'folder', // Mantenemos el icono o default
+          subcategorias: existingSubNames // Enviamos las subs existentes para preservarlas
+        });
+      } else {
+        // MODO CREACIÓN:
+        await apiCategories.create({
+          nombre: name.trim(),
+          icono: 'folder', // Icono por defecto
+          subcategorias: [] // Array vacío al crear
+        });
+      }
+      
+      onSave(); // Notificar al padre para recargar lista
+    } catch (error) {
+      console.error("Error al guardar categoría:", error);
+      // Aquí podrías manejar un toast de error si tuvieras acceso a la función
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
 
   return (

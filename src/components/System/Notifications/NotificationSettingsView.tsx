@@ -1,5 +1,6 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
-import { Bell, Info, Mail } from 'lucide-react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { Bell, Info, Mail, Loader2 } from 'lucide-react';
+import { apiUsers } from '../../../api';
 
 export interface NotificationSettingsViewRef {
   handleSaveConfig: () => void;
@@ -12,23 +13,64 @@ interface NotificationSettingsViewProps {
 export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, NotificationSettingsViewProps>(
   ({ showToast }, ref) => {
     
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState<string>('1'); // ID simulado hasta tener Login
+
     const [config, setConfig] = useState({
       active: true,
-      email: 'julio@rancholastrojes.com' 
+      email: '' 
     });
 
+    // 1. Cargar el usuario actual al montar
+    useEffect(() => {
+      const loadUserPreferences = async () => {
+        setIsLoading(true);
+        try {
+          const user = await apiUsers.getCurrentUser();
+          setCurrentUserId(user.id);
+          setConfig({
+            active: user.receiveNotifications ?? true,
+            email: user.notificationEmail || user.email || ''
+          });
+        } catch (error) {
+          console.error("Error cargando preferencias de usuario", error);
+          showToast('Error al cargar la configuración de usuario', 'error');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadUserPreferences();
+    }, []);
+
+    // 2. Guardar datos de notificación del usuario
     useImperativeHandle(ref, () => ({
-      handleSaveConfig: () => {
+      handleSaveConfig: async () => {
         if (config.active && !/^\S+@\S+\.\S+$/.test(config.email)) {
           showToast('Por favor ingresa un correo electrónico válido.', 'error');
           return;
         }
-        showToast('Configuración de alertas guardada correctamente', 'success');
+
+        try {
+          await apiUsers.updateNotifications(currentUserId, config.active, config.email);
+          showToast('Preferencias de notificación actualizadas', 'success');
+        } catch (error) {
+          showToast('Error al actualizar las preferencias', 'error');
+        }
       }
     }));
 
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-32">
+           <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+           <p className="text-stone-500 font-medium">Cargando tus preferencias...</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+      <div className="space-y-8">
         
         {/* Banner de Información */}
         <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
@@ -36,13 +78,13 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
           <div>
             <h4 className="font-bold text-brand-900">Avisos de Nuevas Órdenes</h4>
             <p className="text-sm text-brand-800 mt-1 leading-relaxed">
-              Mantente al tanto de tu negocio. Si activas esta opción, el sistema enviará automáticamente un correo electrónico con el resumen del pedido cada vez que un cliente complete una compra en la tienda.
+              Mantente al tanto de tu negocio. Si activas esta opción, el sistema te enviará automáticamente un correo electrónico con el resumen del pedido cada vez que un cliente complete una compra en la tienda.
             </p>
           </div>
         </div>
 
         {/* Tarjeta Principal Homologada: rounded-[2.5rem], border-stone-200 */}
-        <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm">
+        <div className="bg-white border border-stone-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-md transition-all duration-300">
           
           {/* Cabecera con Toggle */}
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-100 gap-4">
@@ -53,7 +95,7 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
               </div>
               <div>
                 <h3 className="font-black text-stone-800 uppercase tracking-widest text-sm leading-tight">Alertas por Correo</h3>
-                <p className="text-[10px] text-stone-400 font-bold uppercase mt-1">Recibe un aviso por cada venta realizada</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Tus preferencias personales</p>
               </div>
             </div>
 
@@ -81,7 +123,7 @@ export const NotificationSettingsView = forwardRef<NotificationSettingsViewRef, 
                   value={config.email} 
                   onChange={(e) => setConfig({ ...config, email: e.target.value })} 
                   placeholder="ejemplo@correo.com" 
-                  // ESTÁNDAR: Input homologado
+                  // ESTÁNDAR: Input homologado (burbuja)
                   className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 pr-6 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" 
                 />
               </div>

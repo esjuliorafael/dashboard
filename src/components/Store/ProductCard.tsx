@@ -19,8 +19,34 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDel
   const touchX = useRef(0);
   const cardRef = useRef<HTMLDivElement>(null);
   
+  // NUEVO: Referencia para controlar el video
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   const SWIPE_THRESHOLD = 80;
   const ACTION_WIDTH = 100;
+
+  // Detectar si es video (.mp4)
+  const isVideo = product.imageUrl?.toLowerCase().endsWith('.mp4');
+
+  // Lógica de reproducción al pasar el mouse (Hover)
+  const handleMouseEnter = () => {
+    if (isVideo && videoRef.current) {
+      // Promesa para evitar errores si el usuario pasa el mouse muy rápido
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play fue prevenido (silencioso)
+        });
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isVideo && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0; // Reinicia al primer frame (foto)
+    }
+  };
 
   // Configuración de Estados (Móvil vs Escritorio)
   const getStatusConfig = (status: Product['status']) => {
@@ -102,6 +128,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDel
   return (
     <div 
       style={style}
+      // Agregamos los eventos de mouse aquí al contenedor principal
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={`group relative rounded-[2.5rem] shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95 border ${statusConfig.mobileStyle} sm:bg-white sm:border-stone-200`}
     >
       {/* Background Actions (Mobile) */}
@@ -133,19 +162,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDel
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}
-        // CORRECCIÓN MATEMÁTICA: Padding unificado a 'p-4' (16px) en todas las resoluciones
-        // Esto garantiza que el radio de la tarjeta (40px) y el de la miniatura (24px) sean perfectamente concéntricos (40-16=24).
         className="relative z-10 bg-transparent sm:bg-white p-4 flex flex-row items-center gap-3 sm:gap-6 w-full"
       >
         
         {/* Thumbnail */}
-        {/* rounded-[1.5rem] = 24px */}
         <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-[1.5rem] overflow-hidden bg-stone-100 border border-stone-200 shadow-inner relative">
-          <img 
-            src={product.imageUrl} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-            alt={product.name} 
-          />
+          {isVideo ? (
+            <video
+              ref={videoRef} // Conectamos la referencia
+              src={product.imageUrl}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              muted
+              loop
+              playsInline
+              preload="metadata" // Carga el primer frame sin descargar todo el video
+              // IMPORTANTE: Hemos quitado 'autoPlay'
+            />
+          ) : (
+            <img 
+              src={product.imageUrl} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              alt={product.name} 
+            />
+          )}
           <div className="absolute inset-0 bg-black/5" />
         </div>
 

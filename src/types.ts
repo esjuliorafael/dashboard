@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface OrderItem {
@@ -12,12 +11,12 @@ export interface OrderItem {
 export interface Order {
   id: string;
   customer: string;
-  customerPhone: string;
+  customerPhone?: string;
   customerState: string;
   customerAddress?: string;
   items: OrderItem[];
   total: number;
-  status: 'paid' | 'pending' | 'cancelled';
+  status: 'paid' | 'pending' | 'cancelled' | 'shipped' | 'delivered';
   date: string;
 }
 
@@ -43,11 +42,41 @@ export interface Media {
   description: string;
   type: 'image' | 'video';
   category: string;
+  categoryId?: string | number; 
   subcategory: string;
+  subcategoryId?: string | number;
   url: string;
+  thumbnail?: string;
+  location?: string;
   likes: number;
   isFavorite: boolean;
-  createdAt: string; // ISO format for sorting
+  createdAt: string; 
+}
+
+export interface Subcategory {
+  id: string;
+  nombre: string;
+  categoria_id: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  count?: number;
+  slug?: string;
+  subcategorias?: Subcategory[];
+}
+
+export interface User {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+  receiveNotifications?: boolean;
+  notificationEmail?: string;
 }
 
 export interface StatCardProps {
@@ -78,19 +107,56 @@ export interface StateZone {
 }
 
 export interface ShippingConfig {
-  baseCostArticles: number;
-  freeShippingArticles: boolean;
-  costNormalZone: number;
-  costExtendedZone: number;
-  freeShippingBirds: boolean;
+  baseRate: number;
+  extendedRate: number;
+  freeShippingThreshold: number;
+  animalSurcharge: number;
 }
 
-export interface User {
+// --- NUEVOS TIPOS: FACTURACIÓN ---
+
+export interface ExtraCharge {
   id: string;
-  fullName: string;
-  email: string;
-  username: string;
-  password?: string;
-  isActive: boolean;
-  createdAt: string;
+  concept: string;
+  amount: number;
+  status: 'pending' | 'paid';
+  date: string;
+}
+
+export interface AnnualService {
+  id: string;
+  concept: string;
+  description: string;
+  amount: number;
+  isPaid: boolean;
+  contractDate: string;
+  dueDate: string;
+  iconType: 'globe' | 'server' | 'wrench' | 'shield' | 'default';
+}
+
+// --- NUEVOS TIPOS: PAGOS Y WHATSAPP ---
+
+export interface BankDetails {
+  bankName: string;
+  beneficiary: string;
+  clabe: string;
+  cardNumber: string;
+}
+
+export interface SalesChannel extends BankDetails {
+  id: string;
+  name: string;
+  purposeKey: string;
+}
+
+export interface WhatsAppDetails {
+  active: boolean;
+  phoneNumber: string;
+  template: string;
+}
+
+export interface WhatsAppChannel extends WhatsAppDetails {
+  id: string;
+  name: string;
+  purposeKey: string;
 }
