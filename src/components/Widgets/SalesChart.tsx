@@ -2,24 +2,36 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-export const SalesChart: React.FC = () => {
-  const data = useMemo(() => {
+interface SalesChartProps {
+  data?: Record<string, number>;
+}
+
+export const SalesChart: React.FC<SalesChartProps> = ({ data = {} }) => {
+  const chartData = useMemo(() => {
     const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
     const today = new Date();
     const result = [];
-    const values = [3500, 5200, 4100, 2800, 6300, 4900, 7550];
 
+    // Recorremos los últimos 7 días (incluyendo hoy)
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
+      
+      // Formateamos la fecha a YYYY-MM-DD usando la zona horaria local
+      const dateString = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      
       result.push({
         name: days[d.getDay()],
-        value: values[6 - i],
+        value: Number(data[dateString] || 0), // Casting a Number
         isToday: i === 0
       });
     }
     return result;
-  }, []);
+  }, [data]);
+
+  // Sumamos el total de los 7 días. Extraemos los valores como un arreglo de números
+  const valuesArray: number[] = Object.values(data) as number[];
+  const totalVentas: number = valuesArray.reduce((acc: number, val: number) => acc + val, 0);
 
   return (
     // ESTÁNDAR: rounded-[2.5rem], border-stone-200
@@ -36,13 +48,15 @@ export const SalesChart: React.FC = () => {
       </div>
       
       <div className="flex items-baseline gap-2 mb-6">
-        <span className="text-4xl font-black text-stone-800 tracking-tighter">$34,350</span>
+        <span className="text-4xl font-black text-stone-800 tracking-tighter">
+          ${Number(totalVentas).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+        </span>
         <span className="text-sm font-bold text-stone-400">MXN</span>
       </div>
 
       <div className="flex-grow w-full min-h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+          <BarChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
             <XAxis 
               dataKey="name" 
@@ -55,15 +69,16 @@ export const SalesChart: React.FC = () => {
               axisLine={false} 
               tickLine={false} 
               tick={{ fill: '#a8a29e', fontSize: 10, fontWeight: 700 }} 
+              tickFormatter={(value) => value > 0 ? `$${value}` : '0'}
             />
             <Tooltip 
               cursor={{ fill: 'transparent' }}
               contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e7e5e4', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               itemStyle={{ color: '#ea580c', fontWeight: 700, fontSize: '12px' }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ventas']}
+              formatter={(value: number) => [`$${Number(value).toLocaleString('es-MX')}`, 'Ventas']}
             />
             <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-              {data.map((entry, index) => (
+              {chartData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
                   fill={entry.isToday ? '#ea580c' : '#e5e5e5'} 

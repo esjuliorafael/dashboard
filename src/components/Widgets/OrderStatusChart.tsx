@@ -2,15 +2,26 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-const data = [
-  { name: 'Pagado', value: 24, color: '#15803d' }, // green-700
-  { name: 'Pendiente', value: 8, color: '#b45309' }, // amber-700
-  { name: 'Cancelado', value: 3, color: '#be123c' }, // rose-700
-];
+interface OrderStatusChartProps {
+  stats?: {
+    paid: { count: number; amount: number };
+    pending: { count: number; amount: number };
+    cancelled: { count: number; amount: number };
+    totalCount: number;
+    totalAmount: number;
+  };
+}
 
-const totalOrders = data.reduce((acc, curr) => acc + curr.value, 0);
+export const OrderStatusChart: React.FC<OrderStatusChartProps> = ({ stats }) => {
+  // Mapeamos los datos reales a la gráfica
+  const data = [
+    { name: 'Pagado', value: stats?.paid.count || 0, color: '#15803d' }, // green-700
+    { name: 'Pendiente', value: stats?.pending.count || 0, color: '#b45309' }, // amber-700
+    { name: 'Cancelado', value: stats?.cancelled.count || 0, color: '#be123c' }, // rose-700
+  ];
 
-export const OrderStatusChart: React.FC = () => {
+  const totalOrders = stats?.totalCount || 0;
+
   return (
     // ESTÁNDAR: rounded-[2.5rem], border-stone-200
     <div className="flex flex-col h-full bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200">
@@ -19,10 +30,6 @@ export const OrderStatusChart: React.FC = () => {
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-4xl font-black text-stone-800 tracking-tighter">{totalOrders}</span>
           <span className="text-sm text-stone-400 font-bold">totales</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 w-fit mt-3">
-          <TrendingUp size={14} />
-          <span>+15% vs semana anterior</span>
         </div>
       </div>
       
@@ -60,7 +67,7 @@ export const OrderStatusChart: React.FC = () => {
       {/* Detailed Legend */}
       <div className="flex flex-col gap-3 mt-4 border-t border-stone-100 pt-5">
         {data.map((item) => {
-          const percentage = ((item.value / totalOrders) * 100).toFixed(1);
+          const percentage = totalOrders > 0 ? ((item.value / totalOrders) * 100).toFixed(1) : '0.0';
           return (
             <div key={item.name} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2.5">

@@ -24,6 +24,12 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   return response.json();
 }
 
+export const apiDashboard = {
+  getStats: async (): Promise<DashboardStats> => {
+    return fetchAPI<DashboardStats>('dashboard.php');
+  }
+};
+
 /* --- API: AUTENTICACIÓN --- */
 export const apiAuth = {
   login: async (credentials: { username: string; password: string }) => {

@@ -160,3 +160,19 @@ export interface WhatsAppChannel extends WhatsAppDetails {
   name: string;
   purposeKey: string;
 }
+
+export interface DashboardStats {
+  activeProducts: number;
+  activeCategories: number;
+  totalMedia: number;
+  orders: {
+    paid: { count: number; amount: number };
+    pending: { count: number; amount: number };
+    cancelled: { count: number; amount: number };
+    totalCount: number;
+    totalAmount: number;
+  };
+  latestMedia: any[];
+  latestProducts: any[];
+  sales7Days: Record<string, number>;
+}

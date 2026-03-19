@@ -1,16 +1,25 @@
 import React from 'react';
 import { Image, Film, MoreHorizontal } from 'lucide-react';
+import { ASSET_BASE_URL } from '../../api';
 
 interface LatestMediaProps {
+  items?: any[];
   onViewGallery?: () => void;
 }
 
-export const LatestMedia: React.FC<LatestMediaProps> = ({ onViewGallery }) => {
-  const mediaItems = [
-    { id: 1, title: 'Campaña Verano.jpg', type: 'image', date: 'Hace 2 horas', url: 'https://picsum.photos/200/200?random=1' },
-    { id: 2, title: 'Reel Promocional.mp4', type: 'video', date: 'Hace 5 horas', url: 'https://picsum.photos/200/200?random=2' },
-    { id: 3, title: 'Producto Nuevo 01.png', type: 'image', date: 'Ayer', url: 'https://picsum.photos/200/200?random=3' },
-  ];
+export const LatestMedia: React.FC<LatestMediaProps> = ({ items = [], onViewGallery }) => {
+  
+  // Helper para obtener la miniatura (igual a la lógica de apiGallery)
+  const getThumbnail = (item: any) => {
+    if (item.tipo === 'video' || item.tipo === 'reel') {
+      return `${ASSET_BASE_URL}${item.ruta_archivo.replace('/videos/', '/videos/thumbs/').replace('.mp4', '.jpg').replace('.mov', '.jpg').replace('.webm', '.jpg')}`;
+    }
+    return `${ASSET_BASE_URL}${item.ruta_archivo}`;
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   return (
     // ESTÁNDAR: rounded-[2.5rem], border-stone-200
@@ -29,26 +38,30 @@ export const LatestMedia: React.FC<LatestMediaProps> = ({ onViewGallery }) => {
       </div>
       
       <div className="flex flex-col gap-3 flex-grow">
-        {mediaItems.map((item) => (
-          // Items: rounded-2xl, border-stone-200 on hover
-          <div key={item.id} className="flex items-center gap-4 p-2.5 hover:bg-stone-50 rounded-2xl transition-all duration-200 cursor-pointer group border border-transparent hover:border-stone-200">
-            {/* Thumbnail: rounded-2xl */}
-            <div className="relative w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 shadow-sm">
-              <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
-              <div className="absolute bottom-1 right-1 p-1 bg-black/40 backdrop-blur-sm rounded-lg text-white">
-                {item.type === 'video' ? <Film size={10} /> : <Image size={10} />}
+        {items.length === 0 ? (
+          <p className="text-sm font-medium text-stone-400 text-center py-6">No hay medios recientes.</p>
+        ) : (
+          items.map((item) => (
+            // Items: rounded-2xl, border-stone-200 on hover
+            <div key={item.id} className="flex items-center gap-4 p-2.5 hover:bg-stone-50 rounded-2xl transition-all duration-200 cursor-pointer group border border-transparent hover:border-stone-200">
+              {/* Thumbnail: rounded-2xl */}
+              <div className="relative w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-stone-100 border border-stone-200 shadow-sm">
+                <img src={getThumbnail(item)} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+                <div className="absolute bottom-1 right-1 p-1 bg-black/40 backdrop-blur-sm rounded-lg text-white">
+                  {(item.tipo === 'video' || item.tipo === 'reel') ? <Film size={10} /> : <Image size={10} />}
+                </div>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-bold text-stone-700 truncate group-hover:text-brand-600 transition-colors">{item.titulo}</h4>
+                <p className="text-[10px] text-stone-400 font-medium flex items-center gap-1 mt-0.5">
+                  {formatDate(item.fecha_creacion)}
+                </p>
               </div>
             </div>
-            
-            <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-bold text-stone-700 truncate group-hover:text-brand-600 transition-colors">{item.title}</h4>
-              <p className="text-[10px] text-stone-400 font-medium flex items-center gap-1 mt-0.5">
-                {item.date}
-              </p>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
       
       <button 

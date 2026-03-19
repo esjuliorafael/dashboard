@@ -26,9 +26,9 @@ import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/What
 import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
 import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
-import { LoginView } from './components/Auth/LoginView'; // NUEVA IMPORTACIÓN
-import { Order } from './types';
-import { apiOrders } from './api';
+import { LoginView } from './components/Auth/LoginView'; 
+import { Order, DashboardStats } from './types'; // AÑADIDO: DashboardStats
+import { apiOrders, apiDashboard } from './api'; // AÑADIDO: apiDashboard
 
 // Reusable Components within App context
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
@@ -104,7 +104,6 @@ const ConfirmModal = ({
 };
 
 function App() {
-  // --- NUEVO: Estado de Autenticación ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'Principal' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Principal');
@@ -133,6 +132,7 @@ function App() {
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null); // NUEVO ESTADO PARA EL DASHBOARD
   const [searchQuery, setSearchQuery] = useState('');
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -145,20 +145,24 @@ function App() {
     variant?: 'danger' | 'warning'
   }>({ isOpen: false, title: '', message: '', confirmLabel: '', onConfirm: () => {} });
 
+  // AÑADIDO: Carga de Órdenes y Estadísticas del Dashboard al mismo tiempo
   useEffect(() => {
-    // Solo cargar órdenes si está autenticado
     if (!isAuthenticated) return;
     
-    const fetchOrders = async () => {
+    const fetchInitialData = async () => {
       try {
-        const data = await apiOrders.getAll();
-        setOrders(data);
+        const [ordersData, statsData] = await Promise.all([
+          apiOrders.getAll(),
+          apiDashboard.getStats()
+        ]);
+        setOrders(ordersData);
+        setDashboardStats(statsData);
       } catch (error) {
-        console.error("Error cargando órdenes:", error);
+        console.error("Error cargando datos iniciales:", error);
         showToast("Error al conectar con la base de datos", "error");
       }
     };
-    fetchOrders();
+    fetchInitialData();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -327,7 +331,6 @@ function App() {
     });
   };
 
-  // --- LÓGICA DE RENDERIZADO DEL LOGIN ---
   if (!isAuthenticated) {
     return (
       <>
@@ -342,7 +345,6 @@ function App() {
     );
   }
 
-  // --- RENDERIZADO DEL DASHBOARD (Resto del código original) ---
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-32 md:pb-10 text-stone-900">
       <Header activeTab={activeTab} setActiveTab={(tab) => {
@@ -830,17 +832,27 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  {/* CHART: 2/3 del espacio */}
                   <div className="xl:col-span-2 min-h-[350px]">
-                    <SalesChart />
+                    <SalesChart data={dashboardStats?.sales7Days} />
                   </div>
                   
+                  {/* WIDGETS: 1/3 del espacio, organizados verticalmente */}
                   <div className="xl:col-span-1 flex flex-col gap-6">
+                    {/* Widget Grande (Productos) */}
                     <div className="flex-1">
-                      <ActiveProductsWidget />
+                      <ActiveProductsWidget count={dashboardStats?.activeProducts || 0} />
                     </div>
+                    {/* Grid de Widgets Pequeños (Pagadas y Pendientes) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <PaidOrdersWidget />
-                      <PendingOrdersWidget />
+                      <PaidOrdersWidget 
+                        amount={dashboardStats?.orders?.paid?.amount || 0} 
+                        totalAmount={dashboardStats?.orders?.totalAmount || 1}
+                      />
+                      <PendingOrdersWidget 
+                        amount={dashboardStats?.orders?.pending?.amount || 0} 
+                        totalAmount={(dashboardStats?.orders?.totalAmount || 0) + (dashboardStats?.orders?.pending?.amount || 0)} 
+                      />
                     </div>
                   </div>
                 </div>
@@ -849,7 +861,10 @@ function App() {
                   <div className="xl:col-span-2">
                     <div className="flex items-center justify-between mb-4 px-1">
                       <h3 className="text-xl font-bold text-stone-800">Últimas Órdenes</h3>
-                      <button className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors">
+                      <button 
+                        onClick={() => navigateToSystem('menu')}
+                        className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors"
+                      >
                         Ver todas
                       </button>
                     </div>
@@ -860,19 +875,26 @@ function App() {
                     </div>
                   </div>
                   <div className="xl:col-span-1">
-                    <OrderStatusChart />
+                    <OrderStatusChart stats={dashboardStats?.orders} />
                   </div>
                 </div>
+                
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
                   <div className="xl:col-span-1 flex flex-col gap-4">
-                    <GalleryWidget onViewGallery={() => navigateToGallery('list')} />
-                    <CategoryWidget />
+                    <GalleryWidget 
+                      count={dashboardStats?.totalMedia || 0} 
+                      onViewGallery={() => navigateToGallery('list')} 
+                    />
+                    <CategoryWidget count={dashboardStats?.activeCategories || 0} />
                   </div>
                   <div className="xl:col-span-1">
-                    <LatestMedia onViewGallery={() => navigateToGallery('list')} />
+                    <LatestMedia 
+                      items={dashboardStats?.latestMedia || []} 
+                      onViewGallery={() => navigateToGallery('list')} 
+                    />
                   </div>
                   <div className="xl:col-span-1">
-                    <LatestProducts />
+                    <LatestProducts items={dashboardStats?.latestProducts || []} />
                   </div>
                 </div>
               </div>
