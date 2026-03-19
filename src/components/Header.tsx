@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
+import { apiSystem, ASSET_BASE_URL } from '../api'; // <-- IMPORTAMOS LA API
 
 interface HeaderProps {
   activeTab: string;
@@ -8,6 +9,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null); // <-- ESTADO PARA EL LOGO
+  
   const navItems = ['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
 
   useEffect(() => {
@@ -16,6 +19,28 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // --- NUEVO: Cargar el logo desde la base de datos ---
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const config = await apiSystem.getConfig();
+        if (config['sistema_logo']) {
+          setLogoUrl(`${ASSET_BASE_URL}${config['sistema_logo']}?t=${new Date().getTime()}`);
+        }
+      } catch (error) {
+        console.error("Error cargando logo en el header:", error);
+      }
+    };
+    
+    loadLogo();
+
+    // Escuchar cuando el IdentityView actualice el logo para refrescarlo instantáneamente
+    const handleLogoUpdate = () => loadLogo();
+    window.addEventListener('logoUpdated', handleLogoUpdate);
+    
+    return () => window.removeEventListener('logoUpdated', handleLogoUpdate);
   }, []);
 
   return (
@@ -31,7 +56,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               <div className="relative group">
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-brand-100 shadow-sm transition-all duration-300 group-hover:scale-105">
                   <img 
-                    src="https://rancholastrojes.com.mx/assets/uploads/logo/logo_698abd3f7c34d.png" 
+                    // <-- Usamos el logo de la base de datos o un fallback por si está vacío
+                    src={logoUrl || "https://rancholastrojes.com.mx/assets/uploads/logo/logo_698abd3f7c34d.png"} 
                     alt="Rancho Las Trojes Logo" 
                     className="w-full h-full object-cover" 
                   />

@@ -26,6 +26,7 @@ import { WhatsAppView, WhatsAppViewRef } from './components/System/WhatsApp/What
 import { InventorySettingsView, InventorySettingsViewRef } from './components/System/Inventory/InventorySettingsView';
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
 import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
+import { LoginView } from './components/Auth/LoginView'; // NUEVA IMPORTACIÓN
 import { Order } from './types';
 import { apiOrders } from './api';
 
@@ -103,6 +104,9 @@ const ConfirmModal = ({
 };
 
 function App() {
+  // --- NUEVO: Estado de Autenticación ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'Principal' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Principal');
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
@@ -142,6 +146,9 @@ function App() {
   }>({ isOpen: false, title: '', message: '', confirmLabel: '', onConfirm: () => {} });
 
   useEffect(() => {
+    // Solo cargar órdenes si está autenticado
+    if (!isAuthenticated) return;
+    
     const fetchOrders = async () => {
       try {
         const data = await apiOrders.getAll();
@@ -152,7 +159,7 @@ function App() {
       }
     };
     fetchOrders();
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (confirmDialog.isOpen) {
@@ -320,6 +327,22 @@ function App() {
     });
   };
 
+  // --- LÓGICA DE RENDERIZADO DEL LOGIN ---
+  if (!isAuthenticated) {
+    return (
+      <>
+        <LoginView 
+          onLoginSuccess={() => setIsAuthenticated(true)} 
+          showToast={showToast} 
+        />
+        {toast && (
+          <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+        )}
+      </>
+    );
+  }
+
+  // --- RENDERIZADO DEL DASHBOARD (Resto del código original) ---
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-32 md:pb-10 text-stone-900">
       <Header activeTab={activeTab} setActiveTab={(tab) => {
@@ -636,7 +659,6 @@ function App() {
               </div>
             ) : (isSystemMode && systemViewMode === 'billing') ? (
               <div className="flex gap-3">
-                {/* AÑADIDO: Lógica para abrir el modal de cargos extra desde la barra principal */}
                 <button 
                   onClick={() => billingRef.current?.handleCreateCharge()}
                   className="bg-stone-900 px-6 py-3.5 rounded-full shadow-sm border border-stone-800 flex items-center gap-2 text-white font-bold text-sm hover:bg-stone-800 transition-all active:scale-95"
@@ -808,18 +830,14 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  {/* CHART: 2/3 del espacio */}
                   <div className="xl:col-span-2 min-h-[350px]">
                     <SalesChart />
                   </div>
                   
-                  {/* WIDGETS: 1/3 del espacio, organizados verticalmente */}
                   <div className="xl:col-span-1 flex flex-col gap-6">
-                    {/* Widget Grande (Productos) */}
                     <div className="flex-1">
                       <ActiveProductsWidget />
                     </div>
-                    {/* Grid de Widgets Pequeños (Pagadas y Pendientes) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <PaidOrdersWidget />
                       <PendingOrdersWidget />
@@ -869,7 +887,6 @@ function App() {
         tabs={['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema']}
       />
 
-      {/* Global Feedback Overlays */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}

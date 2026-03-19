@@ -24,6 +24,30 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   return response.json();
 }
 
+/* --- API: AUTENTICACIÓN --- */
+export const apiAuth = {
+  login: async (credentials: { username: string; password: string }) => {
+    // Usamos la misma función fetchAPI que ya tienes configurada
+    const url = `${API_BASE_URL}/auth.php`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', ...credentials })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Error de conexión con el servidor.');
+    }
+    
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message); // Lanza el error (ej. "Credenciales incorrectas")
+    }
+    return result.data;
+  }
+};
+
 /* --- API: PRODUCTOS --- */
 export const apiProducts = {
   getAll: async (): Promise<Product[]> => {
@@ -336,7 +360,7 @@ export const apiSystem = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(zones.map(z => ({ id: z.id, zone: z.zone })))
     });
-  }
+  },
 
   updateLogo: async (file: File): Promise<{ path: string }> => {
     const formData = new FormData();
