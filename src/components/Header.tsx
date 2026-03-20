@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
-import { apiSystem, ASSET_BASE_URL } from '../api'; // <-- IMPORTAMOS LA API
+import { apiSystem, ASSET_BASE_URL } from '../api';
 
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onLogout: () => void; // <-- AÑADIMOS LA PROP
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null); // <-- ESTADO PARA EL LOGO
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
   const navItems = ['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
 
@@ -21,7 +22,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // --- NUEVO: Cargar el logo desde la base de datos ---
   useEffect(() => {
     const loadLogo = async () => {
       try {
@@ -36,7 +36,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     
     loadLogo();
 
-    // Escuchar cuando el IdentityView actualice el logo para refrescarlo instantáneamente
     const handleLogoUpdate = () => loadLogo();
     window.addEventListener('logoUpdated', handleLogoUpdate);
     
@@ -51,12 +50,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         <div className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             
-            {/* Logo Section */}
             <div className="flex-shrink-0 flex items-center">
               <div className="relative group">
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-brand-100 shadow-sm transition-all duration-300 group-hover:scale-105">
                   <img 
-                    // <-- Usamos el logo de la base de datos o un fallback por si está vacío
                     src={logoUrl || "https://rancholastrojes.com.mx/assets/uploads/logo/logo_698abd3f7c34d.png"} 
                     alt="Rancho Las Trojes Logo" 
                     className="w-full h-full object-cover" 
@@ -65,7 +62,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               </div>
             </div>
 
-            {/* Desktop Navigation - Pill Shape (Hidden on Mobile) */}
             <nav className="hidden md:flex items-center justify-center bg-gray-200/40 p-1.5 rounded-full backdrop-blur-sm mx-4">
               {navItems.map((item) => (
                 <button
@@ -82,9 +78,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               ))}
             </nav>
 
-            {/* Right Actions */}
             <div className="flex items-center gap-3">
               <button 
+                onClick={onLogout} // <-- CONECTAMOS LA ACCIÓN
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-stone-600 shadow-sm hover:bg-stone-50 hover:text-red-500 transition-all border border-stone-100 group"
                 title="Cerrar Sesión"
               >

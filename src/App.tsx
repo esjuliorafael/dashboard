@@ -27,8 +27,8 @@ import { InventorySettingsView, InventorySettingsViewRef } from './components/Sy
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
 import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
 import { LoginView } from './components/Auth/LoginView'; 
-import { Order, DashboardStats } from './types'; // AÑADIDO: DashboardStats
-import { apiOrders, apiDashboard } from './api'; // AÑADIDO: apiDashboard
+import { Order, DashboardStats } from './types';
+import { apiOrders, apiDashboard } from './api';
 
 // Reusable Components within App context
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
@@ -104,7 +104,25 @@ const ConfirmModal = ({
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // --- ESTADO AUTENTICACIÓN CON EXPIRACIÓN DE 12 HORAS ---
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const authString = localStorage.getItem('admin_session');
+    if (!authString) return false;
+    
+    try {
+      const authData = JSON.parse(authString);
+      const now = new Date().getTime();
+      
+      // Si el tiempo actual es mayor al de expiración, borramos y denegamos
+      if (now > authData.expiresAt) {
+        localStorage.removeItem('admin_session');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      return false; // Por si el JSON es inválido o se manipuló
+    }
+  });
 
   const [activeTab, setActiveTab] = useState<'Principal' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Principal');
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
@@ -132,7 +150,7 @@ function App() {
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null); // NUEVO ESTADO PARA EL DASHBOARD
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -145,7 +163,6 @@ function App() {
     variant?: 'danger' | 'warning'
   }>({ isOpen: false, title: '', message: '', confirmLabel: '', onConfirm: () => {} });
 
-  // AÑADIDO: Carga de Órdenes y Estadísticas del Dashboard al mismo tiempo
   useEffect(() => {
     if (!isAuthenticated) return;
     
@@ -181,6 +198,22 @@ function App() {
   }, []);
 
   const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+
+  // --- FUNCIÓN DE LOGIN (Con Timestamp) ---
+  const handleLoginSuccess = () => {
+    const authData = {
+      loggedIn: true,
+      expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) // 12 horas en milisegundos
+    };
+    localStorage.setItem('admin_session', JSON.stringify(authData));
+    setIsAuthenticated(true);
+  };
+
+  // --- FUNCIÓN DE LOGOUT ---
+  const handleLogout = () => {
+    localStorage.removeItem('admin_session');
+    setIsAuthenticated(false);
+  };
 
   const currentDate = new Date().toLocaleDateString('es-ES', { 
     weekday: 'short', 
@@ -335,7 +368,7 @@ function App() {
     return (
       <>
         <LoginView 
-          onLoginSuccess={() => setIsAuthenticated(true)} 
+          onLoginSuccess={handleLoginSuccess} 
           showToast={showToast} 
         />
         {toast && (
@@ -347,15 +380,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-32 md:pb-10 text-stone-900">
-      <Header activeTab={activeTab} setActiveTab={(tab) => {
-        if (tab !== activeTab) {
-          setActiveTab(tab);
-          setSearchQuery('');
-          if (tab === 'Galería') setGalleryViewMode('list');
-          if (tab === 'Tienda') setStoreViewMode('list');
-          if (tab === 'Órdenes') setOrdersViewMode('list');
-        }
-      }} />
+      <Header 
+        activeTab={activeTab} 
+        setActiveTab={(tab) => {
+          if (tab !== activeTab) {
+            setActiveTab(tab);
+            setSearchQuery('');
+            if (tab === 'Galería') setGalleryViewMode('list');
+            if (tab === 'Tienda') setStoreViewMode('list');
+            if (tab === 'Órdenes') setOrdersViewMode('list');
+          }
+        }} 
+        onLogout={handleLogout} 
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         
@@ -832,18 +869,14 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  {/* CHART: 2/3 del espacio */}
                   <div className="xl:col-span-2 min-h-[350px]">
                     <SalesChart data={dashboardStats?.sales7Days} />
                   </div>
                   
-                  {/* WIDGETS: 1/3 del espacio, organizados verticalmente */}
                   <div className="xl:col-span-1 flex flex-col gap-6">
-                    {/* Widget Grande (Productos) */}
                     <div className="flex-1">
                       <ActiveProductsWidget count={dashboardStats?.activeProducts || 0} />
                     </div>
-                    {/* Grid de Widgets Pequeños (Pagadas y Pendientes) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <PaidOrdersWidget 
                         amount={dashboardStats?.orders?.paid?.amount || 0} 

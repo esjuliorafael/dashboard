@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 // src/api.ts
-import { Order, Product, Media, User, Category, StateZone, BankDetails, SalesChannel, WhatsAppDetails, WhatsAppChannel } from './types';
+import { Order, Product, Media, User, Category, StateZone, BankDetails, SalesChannel, WhatsAppDetails, WhatsAppChannel, DashboardStats,AnnualService,ExtraCharge} from './types';
 
 const IS_DEV = import.meta.env.DEV;
 
