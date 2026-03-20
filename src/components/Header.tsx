@@ -5,14 +5,14 @@ import { apiSystem, ASSET_BASE_URL } from '../api';
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onLogout: () => void; // <-- AÑADIMOS LA PROP
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
-  const navItems = ['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
+  const navItems = ['Inicio', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onLogou
 
             <div className="flex items-center gap-3">
               <button 
-                onClick={onLogout} // <-- CONECTAMOS LA ACCIÓN
+                onClick={onLogout}
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-stone-600 shadow-sm hover:bg-stone-50 hover:text-red-500 transition-all border border-stone-100 group"
                 title="Cerrar Sesión"
               >

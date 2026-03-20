@@ -30,7 +30,9 @@ import { LoginView } from './components/Auth/LoginView';
 import { Order, DashboardStats } from './types';
 import { apiOrders, apiDashboard } from './api';
 
-// Reusable Components within App context
+// Definimos un tipo para asegurar coherencia
+type SystemViewType = 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing';
+
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
   React.useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -104,32 +106,45 @@ const ConfirmModal = ({
 };
 
 function App() {
-  // --- ESTADO AUTENTICACIÓN CON EXPIRACIÓN DE 12 HORAS ---
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const authString = localStorage.getItem('admin_session');
     if (!authString) return false;
-    
     try {
       const authData = JSON.parse(authString);
       const now = new Date().getTime();
-      
-      // Si el tiempo actual es mayor al de expiración, borramos y denegamos
       if (now > authData.expiresAt) {
         localStorage.removeItem('admin_session');
         return false;
       }
       return true;
     } catch (error) {
-      return false; // Por si el JSON es inválido o se manipuló
+      return false; 
     }
   });
 
-  const [activeTab, setActiveTab] = useState<'Principal' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Principal');
+  // TAREA 1: Cambio de Principal a Inicio
+  const [activeTab, setActiveTab] = useState<'Inicio' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Inicio');
+  
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
   
-  const [systemViewMode, setSystemViewMode] = useState<'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing'>('menu');
+  // TAREA 2: Memoria de última vista en Sistema (por defecto 'billing', quitamos 'menu')
+  const [systemViewMode, setSystemViewMode] = useState<SystemViewType>(() => {
+    const saved = localStorage.getItem('last_system_view');
+    const validModes: SystemViewType[] = ['shipping', 'config', 'users', 'identity', 'payment', 'whatsapp', 'inventory', 'notifications', 'billing'];
+    
+    // Si hay algo guardado, y es válido, lo usamos.
+    if (saved && validModes.includes(saved as SystemViewType)) {
+      return saved as SystemViewType;
+    }
+    return 'billing'; // Por defecto
+  });
+
+  // Efecto para guardar en localStorage cada vez que el usuario navega por Sistema
+  useEffect(() => {
+    localStorage.setItem('last_system_view', systemViewMode);
+  }, [systemViewMode]);
   
   const [shippingSubView, setShippingSubView] = useState<'config' | 'zones'>('config');
   const [paymentSubView, setPaymentSubView] = useState<'config' | 'channels'>('config'); 
@@ -199,17 +214,15 @@ function App() {
 
   const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
-  // --- FUNCIÓN DE LOGIN (Con Timestamp) ---
   const handleLoginSuccess = () => {
     const authData = {
       loggedIn: true,
-      expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) // 12 horas en milisegundos
+      expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) // 12 horas
     };
     localStorage.setItem('admin_session', JSON.stringify(authData));
     setIsAuthenticated(true);
   };
 
-  // --- FUNCIÓN DE LOGOUT ---
   const handleLogout = () => {
     localStorage.removeItem('admin_session');
     setIsAuthenticated(false);
@@ -304,7 +317,8 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigateToSystem = (mode: 'menu' | 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing' = 'menu') => {
+  // TAREA 2: Actualizamos la firma para que por defecto sea 'billing' (Estado de Cuenta)
+  const navigateToSystem = (mode: SystemViewType = 'billing') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
     setShippingSubView('config');
@@ -384,11 +398,13 @@ function App() {
         activeTab={activeTab} 
         setActiveTab={(tab) => {
           if (tab !== activeTab) {
-            setActiveTab(tab);
+            setActiveTab(tab as any);
             setSearchQuery('');
             if (tab === 'Galería') setGalleryViewMode('list');
             if (tab === 'Tienda') setStoreViewMode('list');
             if (tab === 'Órdenes') setOrdersViewMode('list');
+            // NOTA: Al navegar desde las pestañas, NO llamamos setSystemViewMode,
+            // por lo que conservará intacta la memoria de la última vista visitada.
           }
         }} 
         onLogout={handleLogout} 
@@ -895,7 +911,7 @@ function App() {
                     <div className="flex items-center justify-between mb-4 px-1">
                       <h3 className="text-xl font-bold text-stone-800">Últimas Órdenes</h3>
                       <button 
-                        onClick={() => navigateToSystem('menu')}
+                        onClick={() => navigateToSystem('billing')}
                         className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors"
                       >
                         Ver todas
@@ -937,9 +953,9 @@ function App() {
       </main>
 
       <BottomNav 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab}
-        tabs={['Principal', 'Galería', 'Tienda', 'Órdenes', 'Sistema']}
+        activeTab={activeTab as any} 
+        onTabChange={setActiveTab as any}
+        tabs={['Inicio', 'Galería', 'Tienda', 'Órdenes', 'Sistema']}
       />
 
       {toast && (

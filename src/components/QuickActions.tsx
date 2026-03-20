@@ -56,8 +56,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className, context, 
     }
   ];
 
-  // If we have a context (e.g. "Galería"), filter to show only that group
-  const filteredActions = context && context !== 'Principal'
+  // Se actualiza el contexto esperado a 'Inicio'
+  const filteredActions = context && context !== 'Inicio'
     ? allActions.filter(group => group.group === context)
     : allActions;
 
