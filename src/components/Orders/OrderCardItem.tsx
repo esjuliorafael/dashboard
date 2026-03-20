@@ -35,7 +35,8 @@ const getStateAbbr = (stateName: string) => {
 // Utilidad para formatear fecha (YYYY-MM-DD -> DD/MM/YYYY)
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-');
+  const datePart = dateStr.split(' ')[0]; 
+  const [year, month, day] = datePart.split('-');
   return `${day}/${month}/${year}`;
 };
 

@@ -181,7 +181,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
           const selected = shuffled.slice(0, 6);
           
           const mappedCards = selected.map((img) => ({
-            bg: `url('${ASSET_BASE_URL}${img.url}')`,
+            bg: `url('${img.url}')`, 
             label: img.category || 'Galería',
             sublabel: img.title || 'Archivo',
             isImage: true
@@ -492,7 +492,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
               value={username}
               onChange={setUsername}
               label="Usuario"
-              icon={<User size={15} strokeWidth={1.8} />}
+              icon={<User size={18} strokeWidth={1.8} />}
               disabled={isLoading}
             />
 
@@ -503,7 +503,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
                 value={password}
                 onChange={setPassword}
                 label="Contraseña"
-                icon={<Lock size={15} strokeWidth={1.8} />}
+                icon={<Lock size={18} strokeWidth={1.8} />}
                 disabled={isLoading}
                 paddingRight="3rem"
               />
@@ -511,7 +511,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
                 type="button"
                 onClick={() => setShowPwd(p => !p)}
                 style={{
-                  position: 'absolute', bottom: '1rem', right: '1rem',
+                  position: 'absolute', bottom: '1.15rem', right: '1.25rem',
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: 'rgba(255,255,255,0.3)',
                   display: 'flex', alignItems: 'center',
@@ -521,7 +521,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
                 onMouseEnter={e => (e.currentTarget.style.color = 'rgba(180,126,116,0.8)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
               >
-                {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
 
@@ -532,14 +532,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
               style={{
                 marginTop: '0.5rem',
                 width: '100%',
-                padding: '0.95rem 1.5rem',
+                padding: '1rem 1.5rem',
                 borderRadius: '1rem',
                 border: canSubmit ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.06)',
                 color: canSubmit ? '#fff' : 'rgba(255,255,255,0.2)',
                 background: canSubmit ? undefined : 'rgba(255,255,255,0.05)',
                 fontFamily: 'Inter, system-ui, sans-serif',
                 fontWeight: 700,
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 cursor: canSubmit ? 'pointer' : 'not-allowed',
@@ -549,12 +549,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
               }}
               onMouseEnter={e => { if (canSubmit) (e.currentTarget as HTMLButtonElement).style.opacity = '0.9'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
-              onMouseDown={e => { if (canSubmit) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)'; }}
+              onMouseDown={e => { if (canSubmit) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)'; }}
               onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
             >
               {isLoading
-                ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Verificando...</>
-                : <>Entrar al Sistema <ArrowRight size={15} /></>}
+                ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Verificando...</>
+                : <>Entrar al Sistema <ArrowRight size={18} /></>}
             </button>
           </form>
 
@@ -570,7 +570,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
             transition: 'opacity 0.6s ease 0.5s',
           }}>
             Acceso restringido · Solo personal autorizado<br />
-            Rancho Las Trojes © {new Date().getFullYear()}
+            © {new Date().getFullYear()} Rancho Las Trojes. Todos los derechos reservados. 
           </p>
         </div>
       </div>
@@ -633,7 +633,7 @@ const FormField: React.FC<FormFieldProps> = ({
       </label>
       <div style={{ position: 'relative' }}>
         <div style={{
-          position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)',
+          position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)',
           color: focused ? 'rgba(180,126,116,0.85)' : 'rgba(255,255,255,0.2)',
           transition: 'color 0.2s',
           display: 'flex', alignItems: 'center',
@@ -653,8 +653,8 @@ const FormField: React.FC<FormFieldProps> = ({
           className="input-dark"
           style={{
             width: '100%',
-            padding: `0.85rem ${paddingRight} 0.85rem 2.75rem`,
-            borderRadius: '0.875rem',
+            padding: `1rem ${paddingRight} 1rem 3rem`,
+            borderRadius: '1rem',
             fontSize: '0.85rem',
             fontWeight: 500,
             boxSizing: 'border-box',
