@@ -3,7 +3,7 @@ import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
-import { OrderCard } from './components/Widgets/OrderCard';
+import { OrderWidgetCard } from './components/Widgets/OrderWidgetCard';
 import { OrderStatusChart } from './components/Widgets/OrderStatusChart';
 import { LatestMedia } from './components/Widgets/LatestMedia';
 import { LatestProducts } from './components/Widgets/LatestProducts';
@@ -937,7 +937,7 @@ function App() {
                     <div className="flex flex-col gap-3 flex-1">
                       {orders.length > 0 ? (
                         orders.slice(0, 5).map((order) => (
-                          <OrderCard key={order.id} order={order} />
+                          <OrderWidgetCard key={order.id} order={order} />
                         ))
                       ) : (
                         <div className="flex flex-col items-center justify-center p-12 text-center h-full">

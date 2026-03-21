@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Package, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Order } from '../../types';
-import { OrderCardItem } from './OrderCardItem';
+import { OrderCard } from './OrderCard';
 
 interface OrdersViewProps {
   orders: Order[];
@@ -56,7 +56,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
               className="animate-card-enter"
               style={{ animationDelay: `${idx * 70}ms` }}
             >
-              <OrderCardItem 
+              <OrderCard 
                 order={order}
                 onViewDetail={onViewDetail}
                 onMarkAsPaid={onMarkAsPaid}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
 import { apiSystem, ASSET_BASE_URL } from '../api';
+import { useFavicon } from './useFavicon';
 
 interface HeaderProps {
   activeTab: string;
@@ -12,6 +13,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onLogou
   const [isScrolled, setIsScrolled] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
+  useFavicon(logoUrl);
+
   const navItems = ['Inicio', 'Galería', 'Tienda', 'Órdenes', 'Sistema'];
 
   useEffect(() => {
@@ -53,11 +56,15 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onLogou
             <div className="flex-shrink-0 flex items-center">
               <div className="relative group">
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-brand-100 shadow-sm transition-all duration-300 group-hover:scale-105">
-                  <img 
-                    src={logoUrl || "https://rancholastrojes.com.mx/assets/uploads/logo/logo_698abd3f7c34d.png"} 
-                    alt="Rancho Las Trojes Logo" 
-                    className="w-full h-full object-cover" 
-                  />
+                  {logoUrl ? (
+                    <img 
+                      src={logoUrl} 
+                      alt="Logo del Sistema" 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <span className="text-xs font-bold text-stone-300 tracking-widest">LOGO</span>
+                  )}
                 </div>
               </div>
             </div>
