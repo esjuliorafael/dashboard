@@ -127,7 +127,6 @@ export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'l
       ) : filtered.length > 0 ? (
         <div className="flex flex-col gap-4 max-w-6xl mx-auto">
           {paginatedProducts.map((product, idx) => (
-            // --- CORRECCIÓN: Animación Homologada ---
             <div 
               key={product.id}
               className="animate-card-enter"
@@ -186,12 +185,12 @@ export const StoreView: React.FC<StoreViewProps> = ({ searchQuery, viewMode = 'l
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-stone-200 animate-in zoom-in-95 duration-500">
-          <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center text-stone-300 mb-6 border border-stone-200 shadow-inner">
-            <Search size={32} />
+        <div className="py-20 text-center">
+          <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
+            <ShoppingBag size={40} />
           </div>
-          <h3 className="text-xl font-bold text-stone-800">Sin resultados</h3>
-          <p className="text-stone-500 mt-2 max-w-xs text-center">No encontramos productos con ese criterio.</p>
+          <h3 className="text-xl font-black text-stone-800">No hay productos</h3>
+          <p className="text-stone-500">No se encontraron productos que coincidan con tu búsqueda.</p>
         </div>
       )}
     </div>

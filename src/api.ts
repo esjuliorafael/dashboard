@@ -5,11 +5,11 @@ import { Order, Product, Media, User, Category, StateZone, BankDetails, SalesCha
 const IS_DEV = import.meta.env.DEV;
 
 // CONFIGURACIÓN DE RUTAS
-// API: En desarrollo usa el proxy (/admin/api), en producción la relativa (api)
+// Producción: 'api' buscará dentro de la carpeta actual (ej. /las-trojes/admin/api o /admin/api)
 const API_BASE_URL = IS_DEV ? '/admin/api' : 'api'; 
 
-// ASSETS: En desarrollo apunta directo a tu PHP local, en producción sube un nivel (../)
-// Asegúrate de que esta URL coincida con tu carpeta local de proyecto
+// Producción: '../' bajará un nivel para encontrar las imágenes
+// Ej. de /admin/ baja a la raíz (las-trojes/ o tudominio.com/)
 export const ASSET_BASE_URL = IS_DEV ? 'http://localhost/las-trojes/' : '../';
 
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

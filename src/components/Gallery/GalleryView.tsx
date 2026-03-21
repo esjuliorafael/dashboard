@@ -79,8 +79,6 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
     return filteredMedia.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredMedia, currentPage]);
 
-  // --- CORRECCIÓN: HOOKS MOVIDOS ARRIBA ---
-  // Estos useMemo deben ejecutarse SIEMPRE, antes de cualquier return condicional.
   const columns3 = useMemo(() => {
     const cols: Media[][] = [[], [], []];
     paginatedMedia.forEach((item, i) => {
@@ -96,7 +94,6 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
     });
     return cols;
   }, [paginatedMedia]);
-  // ----------------------------------------
 
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber === currentPage) return;
@@ -221,14 +218,13 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
 
   return (
     <div className="w-full flex flex-col gap-10" ref={galleryTopRef}>
-      
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-32">
            <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
            <p className="text-stone-500 font-medium">Cargando galería...</p>
         </div>
       ) : filteredMedia.length > 0 ? (
-        <>
+        <div className="w-full">
             <div className="hidden lg:grid grid-cols-3 gap-6 min-h-[500px]">
                 {columns3.map((colItems, colIdx) => (
                 <div key={`col-3-${colIdx}`} className="flex flex-col gap-6">
@@ -250,66 +246,58 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ searchQuery, viewMode 
                 </div>
                 ))}
             </div>
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/40 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-stone-200 animate-in zoom-in-95 duration-500">
-          <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center text-stone-300 mb-6 border border-stone-200 shadow-inner">
-            <Search size={32} />
-          </div>
-          <h3 className="text-xl font-bold text-stone-800">No hay coincidencias</h3>
-          <p className="text-stone-500 mt-2 max-w-xs text-center">Intenta ajustar tus términos de búsqueda o filtros de categoría.</p>
-          <button 
-            className="mt-6 px-6 py-2.5 bg-brand-500 text-white rounded-full font-bold text-sm hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/20 active:scale-95" 
-            onClick={() => {
-                setCurrentPage(1); 
-            }}
-          >
-            Ver todos los medios
-          </button>
-        </div>
-      )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">
-            <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`p-3 rounded-full transition-all ${
-                currentPage === 1 
-                  ? 'text-stone-300 cursor-not-allowed opacity-50' 
-                  : 'text-stone-600 hover:bg-stone-100 active:scale-90 hover:text-brand-600'
-              }`}
-            >
-              <ChevronLeft size={20} strokeWidth={3} />
-            </button>
-            <div className="flex items-center gap-1.5 px-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`w-11 h-11 flex items-center justify-center rounded-full text-sm font-black transition-all duration-300 ${
-                    currentPage === pageNum
-                      ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 scale-110 z-10'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-800'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className={`p-3 rounded-full transition-all ${
-                currentPage === totalPages 
-                  ? 'text-stone-300 cursor-not-allowed opacity-50' 
-                  : 'text-stone-600 hover:bg-stone-100 active:scale-90 hover:text-brand-600'
-              }`}
-            >
-              <ChevronRight size={20} strokeWidth={3} />
-            </button>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xl p-2.5 rounded-full border border-white/80 shadow-xl shadow-stone-200/50">
+                  <button
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === 1 
+                        ? 'text-stone-300 cursor-not-allowed opacity-50' 
+                        : 'text-stone-600 hover:bg-stone-100 active:scale-90 hover:text-brand-600'
+                    }`}
+                  >
+                    <ChevronLeft size={20} strokeWidth={3} />
+                  </button>
+                  <div className="flex items-center gap-1.5 px-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`w-11 h-11 flex items-center justify-center rounded-full text-sm font-black transition-all duration-300 ${
+                          currentPage === pageNum
+                            ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30 scale-110 z-10'
+                            : 'text-stone-400 hover:bg-stone-50 hover:text-stone-800'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === totalPages 
+                        ? 'text-stone-300 cursor-not-allowed opacity-50' 
+                        : 'text-stone-600 hover:bg-stone-100 active:scale-90 hover:text-brand-600'
+                    }`}
+                  >
+                    <ChevronRight size={20} strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+            )}
+        </div>
+      ) : (
+        <div className="py-20 text-center">
+          <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
+            <Search size={40} />
           </div>
+          <h3 className="text-xl font-black text-stone-800">No hay medios</h3>
+          <p className="text-stone-500">No se encontraron medios que coincidan con tu búsqueda.</p>
         </div>
       )}
     </div>

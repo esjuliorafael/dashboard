@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw, Plus } from 'lucide-react';
+import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save, UserPlus, Upload, RefreshCw, Plus, Package } from 'lucide-react';
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
@@ -30,7 +30,6 @@ import { LoginView } from './components/Auth/LoginView';
 import { Order, DashboardStats } from './types';
 import { apiOrders, apiDashboard } from './api';
 
-// Definimos un tipo para asegurar coherencia
 type SystemViewType = 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing';
 
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
@@ -122,26 +121,34 @@ function App() {
     }
   });
 
-  // TAREA 1: Cambio de Principal a Inicio
+  // 1. ESTADO PARA GUARDAR EL NOMBRE DEL USUARIO
+  const [userName, setUserName] = useState<string>(() => {
+    const authString = localStorage.getItem('admin_session');
+    if (!authString) return 'Usuario';
+    try {
+      const authData = JSON.parse(authString);
+      // Tomamos solo el primer nombre para el saludo (ej. "Ricardo Torres" -> "Ricardo")
+      return authData.name ? authData.name.split(' ')[0] : 'Usuario';
+    } catch (error) {
+      return 'Usuario';
+    }
+  });
+
   const [activeTab, setActiveTab] = useState<'Inicio' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Inicio');
   
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
   const [storeViewMode, setStoreViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'detail'>('list');
   
-  // TAREA 2: Memoria de última vista en Sistema (por defecto 'billing', quitamos 'menu')
   const [systemViewMode, setSystemViewMode] = useState<SystemViewType>(() => {
     const saved = localStorage.getItem('last_system_view');
     const validModes: SystemViewType[] = ['shipping', 'config', 'users', 'identity', 'payment', 'whatsapp', 'inventory', 'notifications', 'billing'];
-    
-    // Si hay algo guardado, y es válido, lo usamos.
     if (saved && validModes.includes(saved as SystemViewType)) {
       return saved as SystemViewType;
     }
-    return 'billing'; // Por defecto
+    return 'billing'; 
   });
 
-  // Efecto para guardar en localStorage cada vez que el usuario navega por Sistema
   useEffect(() => {
     localStorage.setItem('last_system_view', systemViewMode);
   }, [systemViewMode]);
@@ -153,7 +160,6 @@ function App() {
   const [hasTempLogo, setHasTempLogo] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   
-  // Refs
   const shippingRef = React.useRef<{ handleSaveConfig: () => void; handleSaveZones: () => void }>(null);
   const usersRef = React.useRef<UsersViewRef>(null);
   const identityRef = React.useRef<IdentityViewRef>(null);
@@ -167,6 +173,7 @@ function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ 
@@ -182,6 +189,7 @@ function App() {
     if (!isAuthenticated) return;
     
     const fetchInitialData = async () => {
+      setIsLoadingOrders(true);
       try {
         const [ordersData, statsData] = await Promise.all([
           apiOrders.getAll(),
@@ -192,6 +200,8 @@ function App() {
       } catch (error) {
         console.error("Error cargando datos iniciales:", error);
         showToast("Error al conectar con la base de datos", "error");
+      } finally {
+        setIsLoadingOrders(false);
       }
     };
     fetchInitialData();
@@ -214,12 +224,15 @@ function App() {
 
   const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
-  const handleLoginSuccess = () => {
+  // 2. RECIBIMOS EL NOMBRE Y LO GUARDAMOS AL HACER LOGIN
+  const handleLoginSuccess = (name: string) => {
     const authData = {
       loggedIn: true,
-      expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) // 12 horas
+      name: name, // <-- GUARDAMOS EL NOMBRE
+      expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) 
     };
     localStorage.setItem('admin_session', JSON.stringify(authData));
+    setUserName(name.split(' ')[0]); // <-- ACTUALIZAMOS EL ESTADO LOCAL
     setIsAuthenticated(true);
   };
 
@@ -317,7 +330,6 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // TAREA 2: Actualizamos la firma para que por defecto sea 'billing' (Estado de Cuenta)
   const navigateToSystem = (mode: SystemViewType = 'billing') => {
     setActiveTab('Sistema');
     setSystemViewMode(mode);
@@ -403,8 +415,6 @@ function App() {
             if (tab === 'Galería') setGalleryViewMode('list');
             if (tab === 'Tienda') setStoreViewMode('list');
             if (tab === 'Órdenes') setOrdersViewMode('list');
-            // NOTA: Al navegar desde las pestañas, NO llamamos setSystemViewMode,
-            // por lo que conservará intacta la memoria de la última vista visitada.
           }
         }} 
         onLogout={handleLogout} 
@@ -472,7 +482,8 @@ function App() {
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
               ) : (
-                <>¡Bienvenido de Nuevo, <span className="text-stone-600">Ricardo!</span></>
+                // 3. RENDERIZAMOS EL NOMBRE DINÁMICO AQUÍ
+                <>¡Bienvenido de Nuevo, <span className="text-stone-600">{userName}!</span></>
               )}
             </h1>
             <p className="text-stone-500 mt-2 font-medium">
@@ -814,6 +825,7 @@ function App() {
               ) : (
                 <OrdersView 
                   orders={filteredOrders}
+                  isLoading={isLoadingOrders}
                   onViewDetail={handleViewOrderDetail}
                   onMarkAsPaid={handleMarkAsPaid}
                   onCancelOrder={handleCancelOrder}
@@ -907,20 +919,37 @@ function App() {
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  <div className="xl:col-span-2">
+                  <div className="xl:col-span-2 flex flex-col">
                     <div className="flex items-center justify-between mb-4 px-1">
                       <h3 className="text-xl font-bold text-stone-800">Últimas Órdenes</h3>
                       <button 
-                        onClick={() => navigateToSystem('billing')}
+                        onClick={() => {
+                          setActiveTab('Órdenes');
+                          setOrdersViewMode('list');
+                          setSearchQuery('');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors"
                       >
                         Ver todas
                       </button>
                     </div>
-                    <div className="flex flex-col gap-3">
-                      {orders.slice(0, 5).map((order) => (
-                        <OrderCard key={order.id} order={order} />
-                      ))}
+                    <div className="flex flex-col gap-3 flex-1">
+                      {orders.length > 0 ? (
+                        orders.slice(0, 5).map((order) => (
+                          <OrderCard key={order.id} order={order} />
+                        ))
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                          <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
+                            <Package size={32} />
+                          </div>
+                          <h3 className="text-xl font-black text-stone-800 tracking-tight mb-2">No hay órdenes</h3>
+                          <p className="text-stone-500 text-sm font-medium max-w-sm">
+                            Aún no tienes órdenes registradas en el sistema.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="xl:col-span-1">

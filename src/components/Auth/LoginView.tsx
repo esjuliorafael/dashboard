@@ -3,13 +3,11 @@ import { Lock, User, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { apiAuth, apiSystem, apiGallery, ASSET_BASE_URL } from '../../api';
 
 interface LoginViewProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (userName: string) => void; // <-- 1. ACEPTAR EL NOMBRE AQUÍ
   showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   ANIMATION KEYFRAMES
-───────────────────────────────────────────────────────────── */
+/* ... ESTILOS, FALLBACKS Y CardIcon INTACTOS ... */
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -117,9 +115,6 @@ const STYLES = `
   .input-dark:disabled { opacity: 0.4; cursor: not-allowed; }
 `;
 
-/* ─────────────────────────────────────────────────────────────
-   FALLBACK GALLERY DATA
-───────────────────────────────────────────────────────────── */
 const FALLBACK_CARDS = [
   { bg: 'linear-gradient(135deg, #2d1810 0%, #5c3222 50%, #8b4e32 100%)', label: 'Aves de Combate', sublabel: 'Criadero' },
   { bg: 'linear-gradient(135deg, #1a2a1a 0%, #2d4a20 50%, #4a6e30 100%)', label: 'Instalaciones', sublabel: 'Sector Norte' },
@@ -138,9 +133,6 @@ const CardIcon: React.FC<{ idx: number }> = ({ idx }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────────────────────── */
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast }) => {
   const [logoUrl, setLogoUrl]     = useState<string | null>(null);
   const [username, setUsername]   = useState('');
@@ -150,7 +142,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
   const [phase, setPhase]         = useState(0); 
   const [dynamicCards, setDynamicCards] = useState<any[]>([]);
 
-  /* Inject styles */
   useEffect(() => {
     const el = document.createElement('style');
     el.textContent = STYLES;
@@ -158,26 +149,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
     return () => document.head.removeChild(el);
   }, []);
 
-  /* Load System Data (Logo + Gallery) */
   useEffect(() => {
     const loadSystemData = async () => {
       try {
-        // 1. Load Logo
         const cfg = await apiSystem.getConfig();
         if (cfg['sistema_logo']) {
           setLogoUrl(`${ASSET_BASE_URL}${cfg['sistema_logo']}?t=${Date.now()}`);
         }
 
-        // 2. Load Gallery Images for dynamic background
         const media = await apiGallery.getAll();
-        // Filtramos solo imágenes (ignoramos videos para las tarjetas)
         const imagesOnly = media.filter(m => m.type === 'image');
         
-        // Si tenemos suficientes imágenes, construimos las tarjetas dinámicas
         if (imagesOnly.length > 0) {
-          // Desordenamos aleatoriamente para que siempre sea distinto al entrar
           const shuffled = imagesOnly.sort(() => 0.5 - Math.random());
-          // Tomamos hasta 6
           const selected = shuffled.slice(0, 6);
           
           const mappedCards = selected.map((img) => ({
@@ -198,7 +182,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
     loadSystemData();
   }, []);
 
-  /* Staggered entrance phases */
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 100);
     const t2 = setTimeout(() => setPhase(2), 400);
@@ -213,9 +196,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
     if (!canSubmit) return;
     setIsLoading(true);
     try {
-      await apiAuth.login({ username: username.trim(), password });
+      // 2. RECIBIMOS EL OBJETO userData DESDE LA API
+      const userData = await apiAuth.login({ username: username.trim(), password });
       showToast('Autenticación exitosa', 'success');
-      onLoginSuccess();
+      // 3. PASAMOS EL NOMBRE DE USUARIO (userData.name) A LA APP
+      onLoginSuccess(userData.name);
     } catch (err: any) {
       showToast(err.message || 'No se pudo conectar con el servidor.', 'error');
     } finally {
@@ -223,7 +208,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
     }
   };
 
-  // Merge dynamic cards with fallbacks to ensure we always have 6 cards to show
   const displayCards = Array.from({ length: 6 }).map((_, i) => {
     return dynamicCards[i] || FALLBACK_CARDS[i];
   });
@@ -240,14 +224,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
         overflow: 'hidden',
       }}
     >
-      {/* ══════════════════════════════════════════════════
-          LEFT — Gallery Panel (hidden on mobile)
-      ══════════════════════════════════════════════════ */}
       <div
         style={{
           flex: '1 1 60%',
           position: 'relative',
-          display: 'none', // overridden by media query via className
+          display: 'none', 
           flexDirection: 'column',
           padding: '3rem',
           background: 'linear-gradient(155deg, #140c0a 0%, #0c0807 60%, #161008 100%)',
@@ -285,7 +266,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
           </div>
         </div>
 
-        {/* Masonry-style gallery grid */}
         <div
           style={{
             flex: 1,
@@ -297,7 +277,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
           }}
         >
           {displayCards.map((card, i) => {
-            const delay = [0, 80, 160, 60, 140, 220][i]; // Original staggered delays
+            const delay = [0, 80, 160, 60, 140, 220][i]; 
             return (
               <div
                 key={i}
@@ -321,7 +301,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
                   cursor: 'default',
                 }}
               >
-                {/* Si no es una imagen real, mostrar el icono decorativo */}
                 {!card.isImage && (
                   <div style={{
                     position: 'absolute', top: '50%', left: '50%',
@@ -345,7 +324,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
           })}
         </div>
 
-        {/* Bottom tagline */}
         <div style={{
           position: 'relative', zIndex: 2,
           marginTop: '2rem',
@@ -371,9 +349,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          RIGHT — Form Panel
-      ══════════════════════════════════════════════════ */}
       <div
         className="anim-panel form-panel"
         style={{
@@ -600,9 +575,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   FORM FIELD SUB-COMPONENT
-───────────────────────────────────────────────────────────── */
 interface FormFieldProps {
   type: string;
   placeholder: string;
