@@ -166,7 +166,14 @@ export const apiOrders = {
       total: parseFloat(item.total),
       status: mapOrderStatus(item.estatus),
       date: item.fecha_creacion,
-      items: [] 
+      // Mapear dinámicamente los detalles de la orden
+      items: (item.detalles || item.items || []).map((i: any) => ({
+        id: (i.producto_id || i.id).toString(),
+        name: i.nombre_producto || i.nombre || 'Producto',
+        price: parseFloat(i.precio_unitario || i.precio || 0),
+        quantity: parseInt(i.cantidad || 1),
+        type: i.tipo_producto || i.tipo || 'articulo' // <- Esto enciende hasBirds y hasArticles
+      }))
     }));
   },
   cancel: async (id: string) => {
