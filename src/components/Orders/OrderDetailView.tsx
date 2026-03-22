@@ -1,6 +1,61 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Package, Clock, CheckCircle2, XCircle, Phone, MapPin, User, Calendar, DollarSign, Plane, Truck } from 'lucide-react';
 import { Order } from '../../types';
+
+// Sub-componente para manejar la miniatura (Foto o Video al hacer hover)
+const OrderItemThumbnail = ({ item }: { item: any }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isVideo = item.imageUrl?.toLowerCase().endsWith('.mp4');
+
+  const handleMouseEnter = () => {
+    if (isVideo && videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) playPromise.catch(() => {});
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isVideo && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  if (!item.imageUrl) {
+    return (
+      <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center border ${item.type === 'ave' ? 'bg-brand-50 text-brand-600 border-brand-100' : 'bg-stone-50 text-stone-500 border-stone-100'}`}>
+        {item.type === 'ave' ? <Plane size={24} strokeWidth={1.5} /> : <Package size={24} strokeWidth={1.5} />}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="w-14 h-14 shrink-0 rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-inner relative group"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {isVideo ? (
+        <video
+          ref={videoRef}
+          src={item.imageUrl}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+      ) : (
+        <img 
+          src={item.imageUrl} 
+          alt={item.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+      )}
+      <div className="absolute inset-0 bg-black/5" />
+    </div>
+  );
+};
 
 interface OrderDetailViewProps {
   order: Order;
@@ -115,10 +170,8 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
               {order.items.map((item) => (
                 <div key={item.id} className="p-6 flex items-center justify-between hover:bg-stone-50 transition-colors">
                   <div className="flex items-center gap-4">
-                    {/* Icon Container: rounded-2xl (Homologado) */}
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${item.type === 'ave' ? 'bg-brand-50 text-brand-600 border-brand-100' : 'bg-stone-50 text-stone-500 border-stone-100'}`}>
-                      {item.type === 'ave' ? <Plane size={24} strokeWidth={1.5} /> : <Package size={24} strokeWidth={1.5} />}
-                    </div>
+                    {/* Thumbnail Container */}
+                    <OrderItemThumbnail item={item} />
                     <div>
                       <p className="font-bold text-stone-800 text-lg leading-tight">{item.name}</p>
                       <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mt-1">{item.type === 'ave' ? 'Ave' : 'Artículo'}</p>

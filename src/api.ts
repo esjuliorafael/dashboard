@@ -172,7 +172,9 @@ export const apiOrders = {
         name: i.nombre_producto || i.nombre || 'Producto',
         price: parseFloat(i.precio_unitario || i.precio || 0),
         quantity: parseInt(i.cantidad || 1),
-        type: i.tipo_producto || i.tipo || 'articulo' // <- Esto enciende hasBirds y hasArticles
+        type: i.tipo_producto || i.tipo || 'articulo',
+        // Inyectamos la URL de la imagen/video si existe
+        imageUrl: i.portada ? `${ASSET_BASE_URL}${i.portada}` : undefined
       }))
     }));
   },
