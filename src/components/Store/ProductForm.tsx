@@ -12,7 +12,6 @@ interface ProductFormProps {
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel, onSave, onValidationChange, showToast }) => {
-  // ... (Toda la lógica de estado y métodos se mantiene EXACTAMENTE igual)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -99,22 +98,35 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
     try {
       const formData = new FormData();
       if (initialData?.id) formData.append('id', initialData.id);
+      
       formData.append('tipo', productType);
       formData.append('nombre', name);
       formData.append('precio', price);
       formData.append('descripcion', description);
+      
+      // CORRECCIÓN: Mapear y enviar el estado para TODOS los productos (Aves y Artículos)
+      const statusMap: Record<string, string> = {
+        'available': 'disponible',
+        'reserved': 'reservado',
+        'sold': 'vendido'
+      };
+      formData.append('estado_venta', statusMap[status] || 'disponible');
+      
       if (productType === 'ave') {
         formData.append('anillo', ringNumber);
         formData.append('edad', age);
         formData.append('proposito', purpose);
-        formData.append('estado_venta', status);
+        // Enviar siempre 1 en el stock si es un ave (producto único)
+        formData.append('stock', '1');
       } else {
         formData.append('stock', stock);
       }
+      
       if (coverFile) formData.append('portada', coverFile);
       galleryFiles.forEach((file) => {
         formData.append('galeria[]', file);
       });
+      
       await apiProducts.create(formData);
       onSave();
     } catch (error) {
@@ -130,7 +142,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
       
       {/* Columna Izquierda (Igual: Portada y Galería) */}
       <div className="flex-1 space-y-6">
-         {/* ... Contenedor de Portada (No cambia) ... */}
         <div 
           onClick={() => !isProcessing && coverInputRef.current?.click()}
           className={`relative w-full aspect-square sm:aspect-video lg:aspect-square rounded-[2.5rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center overflow-hidden ${!coverUrl ? 'border-stone-200 bg-stone-50 hover:bg-white hover:border-brand-300 cursor-pointer group' : 'border-transparent shadow-2xl shadow-stone-200 group'}`}
@@ -192,7 +203,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
           <input type="file" ref={coverInputRef} className="hidden" accept="image/*,video/*" onChange={handleCoverUpload} />
         </div>
 
-         {/* ... Galería Adicional (No cambia) ... */}
         <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-6">
              <div className="flex flex-col">
@@ -239,7 +249,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
         </div>
       </div>
 
-      {/* Columna Derecha (REORDENADA PARA MEJOR UX) */}
+      {/* Columna Derecha */}
       <div className="w-full lg:w-[480px] flex flex-col gap-6">
         <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-200 space-y-8 h-full">
           
@@ -415,7 +425,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ initialData, onCancel,
 
             <button type="submit" className="hidden" disabled={!isFormValid || isSubmitting} />
             
-            {/* Feedback Visual (Homologado) */}
+            {/* Feedback Visual */}
             {isSubmitting && (
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-[2.5rem]">
                     <div className="flex flex-col items-center gap-2">
