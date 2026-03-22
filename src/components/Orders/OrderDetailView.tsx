@@ -191,7 +191,10 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
                   </div>
                   <div className="bg-white/10 rounded-2xl p-5 border border-white/10">
                     <p className="text-sm font-medium leading-relaxed text-stone-300">
-                      El envío se realiza al aeropuerto o terminal más cercana al estado de <span className="text-white font-bold">{order.customerState}</span>.
+                      {hasArticles 
+                        ? `El envío se realizará al aeropuerto o terminal más cercana al estado de ${order.customerState}.`
+                        : (order.customerAddress || `El envío se realizará al aeropuerto o terminal más cercana al estado de ${order.customerState}.`)
+                      }
                     </p>
                   </div>
                 </div>
