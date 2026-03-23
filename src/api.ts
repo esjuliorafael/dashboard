@@ -274,7 +274,8 @@ export const apiUsers = {
       isActive: item.activo === 1 || item.activo === '1',
       createdAt: item.fecha_creacion,
       receiveNotifications: item.recibir_notificaciones === 1 || item.recibir_notificaciones === '1',
-      notificationEmail: item.email_notificaciones || item.email
+      notificationEmail: item.email_notificaciones || item.email,
+      role: item.rol || 'staff'
     }));
   },
 
@@ -288,7 +289,8 @@ export const apiUsers = {
       isActive: rawData.activo === 1 || rawData.activo === '1',
       createdAt: rawData.fecha_creacion,
       receiveNotifications: rawData.recibir_notificaciones === 1 || rawData.recibir_notificaciones === '1',
-      notificationEmail: rawData.email_notificaciones || rawData.email
+      notificationEmail: rawData.email_notificaciones || rawData.email,
+      role: rawData.rol || 'staff'
     };
   },
 

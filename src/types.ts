@@ -77,6 +77,7 @@ export interface User {
   createdAt: string;
   receiveNotifications?: boolean;
   notificationEmail?: string;
+  role: 'superadmin' | 'admin' | 'staff';
 }
 
 export interface StatCardProps {

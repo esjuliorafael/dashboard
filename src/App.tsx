@@ -134,6 +134,16 @@ function App() {
     }
   });
 
+  const [userRole, setUserRole] = useState<string>(() => {
+    const authString = localStorage.getItem('admin_session');
+    if (!authString) return 'staff';
+    try {
+      return JSON.parse(authString).role || 'staff';
+    } catch {
+      return 'staff';
+    }
+  });
+
   const [activeTab, setActiveTab] = useState<'Inicio' | 'Galería' | 'Tienda' | 'Órdenes' | 'Sistema'>('Inicio');
   
   const [galleryViewMode, setGalleryViewMode] = useState<'list' | 'create' | 'media_edit' | 'category_create' | 'categories_list' | 'category_edit'>('list');
@@ -224,15 +234,16 @@ function App() {
 
   const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
-  // 2. RECIBIMOS EL NOMBRE Y LO GUARDAMOS AL HACER LOGIN
-  const handleLoginSuccess = (name: string) => {
+  const handleLoginSuccess = (userData: any) => {
     const authData = {
       loggedIn: true,
-      name: name, // <-- GUARDAMOS EL NOMBRE
+      name: userData.name,
+      role: userData.role || 'staff', // <-- GUARDAMOS EL ROL
       expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) 
     };
     localStorage.setItem('admin_session', JSON.stringify(authData));
-    setUserName(name.split(' ')[0]); // <-- ACTUALIZAMOS EL ESTADO LOCAL
+    setUserName(userData.name.split(' ')[0]);
+    setUserRole(userData.role || 'staff');
     setIsAuthenticated(true);
   };
 
@@ -608,6 +619,7 @@ function App() {
               </div>
             ) : (isSystemMode && systemViewMode === 'users') ? (
               <div className="flex gap-3">
+              {userRole !== 'staff' && (
                 <button 
                   onClick={() => usersRef.current?.handleCreateUser()}
                   className="bg-white px-6 py-3.5 rounded-full shadow-sm border border-stone-200 flex items-center gap-2 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all active:scale-95"
@@ -615,6 +627,7 @@ function App() {
                   <UserPlus size={18} className="text-stone-400" />
                   Nuevo Usuario
                 </button>
+              )}
               </div>
             ) : (isSystemMode && systemViewMode === 'shipping') ? (
               <div className="flex gap-3">

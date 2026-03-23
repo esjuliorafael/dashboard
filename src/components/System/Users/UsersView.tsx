@@ -20,9 +20,14 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const [formData, setFormData] = useState({
-    fullName: '', email: '', username: '', password: ''
+  const [formData, setFormData] = useState<{
+    fullName: string; email: string; username: string; password: string; role: 'superadmin' | 'admin' | 'staff';
+  }>({
+    fullName: '', email: '', username: '', password: '', role: 'staff'
   });
+
+  const currentUserString = localStorage.getItem('admin_session');
+  const currentUser = currentUserString ? JSON.parse(currentUserString) : null;
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -55,7 +60,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
   useImperativeHandle(ref, () => ({
     handleCreateUser: () => {
       setEditingUser(null);
-      setFormData({ fullName: '', email: '', username: '', password: '' });
+      setFormData({ fullName: '', email: '', username: '', password: '', role: 'staff' });
       setIsModalOpen(true);
     }
   }));
@@ -63,7 +68,7 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setFormData({
-      fullName: user.fullName, email: user.email, username: user.username, password: ''
+      fullName: user.fullName, email: user.email, username: user.username, password: '', role: user.role
     });
     setIsModalOpen(true);
   };
@@ -151,6 +156,14 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
                   {/* REGLA 4: Título font-black text-stone-800 tracking-tight */}
                   <h4 className="text-lg font-black text-stone-800 tracking-tight">{user.fullName}</h4>
                   <span className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-[10px] font-black uppercase tracking-widest">@{user.username}</span>
+                  {/* NUEVO: BADGE DE ROL */}
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    user.role === 'superadmin' ? 'bg-purple-100 text-purple-700' :
+                    user.role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                    'bg-stone-100 text-stone-500'
+                  }`}>
+                    {user.role}
+                  </span>
                 </div>
                 <p className="text-stone-500 text-sm font-medium mt-0.5">{user.email}</p>
               </div>
@@ -161,22 +174,32 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-stone-200 text-stone-500'}`}>
                   {user.isActive ? 'Activo' : 'Inactivo'}
                 </span>
-                <button 
-                  onClick={() => toggleStatus(user.id)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${user.isActive ? 'bg-brand-500' : 'bg-stone-200'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${user.isActive ? 'left-7' : 'left-1'}`} />
-                </button>
+                
+                {/* RESTricción: No puedes desactivar a un superadmin si no eres uno, y no puedes desactivarte a ti mismo */}
+                {(currentUser?.role === 'superadmin' || user.role !== 'superadmin') && user.email !== currentUser?.email && (
+                  <button 
+                    onClick={() => toggleStatus(user.id)}
+                    className={`w-12 h-6 rounded-full transition-all relative ${user.isActive ? 'bg-brand-500' : 'bg-stone-200'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${user.isActive ? 'left-7' : 'left-1'}`} />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
-                {/* REGLA 6: Botones con active:scale-95 */}
-                <button onClick={() => handleEdit(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95" title="Editar Usuario">
-                  <Pencil size={18} />
-                </button>
-                <button onClick={() => handleDeleteClick(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95" title="Eliminar Usuario">
-                  <Trash2 size={18} />
-                </button>
+                {/* RESTricción: Un admin no puede editar a un superadmin */}
+                {(currentUser?.role === 'superadmin' || user.role !== 'superadmin' || user.email === currentUser?.email) && (
+                  <button onClick={() => handleEdit(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95" title="Editar Usuario">
+                    <Pencil size={18} />
+                  </button>
+                )}
+                
+                {/* RESTricción: No puedes eliminar a un superadmin si no eres uno, y no puedes eliminarte a ti mismo */}
+                {(currentUser?.role === 'superadmin' || user.role !== 'superadmin') && user.email !== currentUser?.email && (
+                  <button onClick={() => handleDeleteClick(user)} className="p-3 bg-stone-50 text-stone-400 border border-transparent hover:border-stone-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95" title="Eliminar Usuario">
+                    <Trash2 size={18} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -220,6 +243,20 @@ export const UsersView = forwardRef<UsersViewRef, UsersViewProps>(({ showToast, 
                       <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none group-focus-within:text-brand-500 transition-colors"><Mail size={18} /></span>
                       <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="ejemplo@rancho.com" 
                         className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm" />
+                    </div>
+                  </div>
+                  <div className="group">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2 ml-1">Rol de Usuario *</label>
+                    <div className="relative">
+                      <span className="absolute left-5 inset-y-0 flex items-center justify-center text-stone-400 pointer-events-none group-focus-within:text-brand-500 transition-colors"><Shield size={18} /></span>
+                      <select required value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                        className="w-full bg-stone-50 border border-stone-200 p-4 pl-12 rounded-2xl text-stone-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm appearance-none cursor-pointer">
+                      {currentUser?.role === 'superadmin' && (
+                        <option value="superadmin">Super Administrador</option>
+                      )}
+                        <option value="admin">Administrador</option>
+                        <option value="staff">Staff</option>
+                      </select>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -3,7 +3,7 @@ import { Lock, User, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { apiAuth, apiSystem, apiGallery, ASSET_BASE_URL } from '../../api';
 
 interface LoginViewProps {
-  onLoginSuccess: (userName: string) => void; // <-- 1. ACEPTAR EL NOMBRE AQUÍ
+  onLoginSuccess: (userData: any) => void;
   showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
@@ -199,8 +199,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, showToast 
       // 2. RECIBIMOS EL OBJETO userData DESDE LA API
       const userData = await apiAuth.login({ username: username.trim(), password });
       showToast('Autenticación exitosa', 'success');
-      // 3. PASAMOS EL NOMBRE DE USUARIO (userData.name) A LA APP
-      onLoginSuccess(userData.name);
+      onLoginSuccess(userData);
     } catch (err: any) {
       showToast(err.message || 'No se pudo conectar con el servidor.', 'error');
     } finally {
