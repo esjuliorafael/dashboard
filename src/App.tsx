@@ -3,7 +3,7 @@ import { Calendar, Search, X, Check, AlertTriangle, CheckCircle2, Settings, Save
 import { Header } from './components/Header';
 import { QuickActions } from './components/QuickActions';
 import { SalesChart } from './components/Widgets/SalesChart';
-import { OrderWidgetCard } from './components/Widgets/OrderWidgetCard';
+import { OrderWidgetCard, OrderWidgetCardSkeleton } from './components/Widgets/OrderWidgetCard';
 import { OrderStatusChart } from './components/Widgets/OrderStatusChart';
 import { LatestMedia } from './components/Widgets/LatestMedia';
 import { LatestProducts } from './components/Widgets/LatestProducts';
@@ -122,13 +122,11 @@ function App() {
     }
   });
 
-  // 1. ESTADO PARA GUARDAR EL NOMBRE DEL USUARIO
   const [userName, setUserName] = useState<string>(() => {
     const authString = localStorage.getItem('admin_session');
     if (!authString) return 'Usuario';
     try {
       const authData = JSON.parse(authString);
-      // Tomamos solo el primer nombre para el saludo (ej. "Ricardo Torres" -> "Ricardo")
       return authData.name ? authData.name.split(' ')[0] : 'Usuario';
     } catch (error) {
       return 'Usuario';
@@ -184,7 +182,7 @@ function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [billingServices, setBillingServices] = useState<AnnualService[]>([]);
   const [billingCharges, setBillingCharges] = useState<ExtraCharge[]>([]);
   
@@ -202,22 +200,22 @@ function App() {
     if (!isAuthenticated) return;
     
     const fetchInitialData = async () => {
-      setIsLoadingOrders(true);
+      setIsLoadingDashboard(true);
       try {
         const [ordersData, statsData, billingData] = await Promise.all([
           apiOrders.getAll(),
           apiDashboard.getStats(),
-          apiBilling.getAll() // <-- NUEVA LLAMADA
+          apiBilling.getAll()
         ]);
         setOrders(ordersData);
         setDashboardStats(statsData);
-        setBillingServices(billingData.services); // <-- GUARDAMOS DATOS
-        setBillingCharges(billingData.charges);   // <-- GUARDAMOS DATOS
+        setBillingServices(billingData.services);
+        setBillingCharges(billingData.charges);
       } catch (error) {
         console.error("Error cargando datos iniciales:", error);
         showToast("Error al conectar con la base de datos", "error");
       } finally {
-        setIsLoadingOrders(false);
+        setIsLoadingDashboard(false);
       }
     };
     fetchInitialData();
@@ -244,7 +242,7 @@ function App() {
     const authData = {
       loggedIn: true,
       name: userData.name,
-      role: userData.role || 'staff', // <-- GUARDAMOS EL ROL
+      role: userData.role || 'staff',
       expiresAt: new Date().getTime() + (12 * 60 * 60 * 1000) 
     };
     localStorage.setItem('admin_session', JSON.stringify(authData));
@@ -499,7 +497,6 @@ function App() {
                   <>Configuración del <span className="text-stone-600">Sistema</span></>
                 )
               ) : (
-                // 3. RENDERIZAMOS EL NOMBRE DINÁMICO AQUÍ
                 <>¡Bienvenido de Nuevo, <span className="text-stone-600">{userName}!</span></>
               )}
             </h1>
@@ -844,7 +841,7 @@ function App() {
               ) : (
                 <OrdersView 
                   orders={filteredOrders}
-                  isLoading={isLoadingOrders}
+                  isLoading={isLoadingDashboard}
                   onViewDetail={handleViewOrderDetail}
                   onMarkAsPaid={handleMarkAsPaid}
                   onCancelOrder={handleCancelOrder}
@@ -915,31 +912,44 @@ function App() {
               </div>
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
-                
-                {/* NUEVO WIDGET DE FACTURACIÓN */}
+
+                {/* WIDGET DE FACTURACIÓN CON SKELETON */}
                 <BillingAlertWidget 
                   services={billingServices} 
-                  charges={billingCharges} 
+                  charges={billingCharges}
+                  isLoading={isLoadingDashboard}
                   onNavigate={() => navigateToSystem('billing')} 
                 />
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                   <div className="xl:col-span-2 min-h-[350px]">
-                    <SalesChart data={dashboardStats?.sales7Days} />
+                    {/* SALESCHART CON SKELETON */}
+                    <SalesChart
+                      data={dashboardStats?.sales7Days}
+                      isLoading={isLoadingDashboard}
+                    />
                   </div>
                   
                   <div className="xl:col-span-1 flex flex-col gap-6">
                     <div className="flex-1">
-                      <ActiveProductsWidget count={dashboardStats?.activeProducts || 0} />
+                      {/* ACTIVEPRODUCTSWIDGET CON SKELETON */}
+                      <ActiveProductsWidget
+                        count={dashboardStats?.activeProducts || 0}
+                        isLoading={isLoadingDashboard}
+                      />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* PAIDORDERSWIDGET CON SKELETON */}
                       <PaidOrdersWidget 
                         amount={dashboardStats?.orders?.paid?.amount || 0} 
                         totalAmount={dashboardStats?.orders?.totalAmount || 1}
+                        isLoading={isLoadingDashboard}
                       />
+                      {/* PENDINGORDERSWIDGET CON SKELETON */}
                       <PendingOrdersWidget 
                         amount={dashboardStats?.orders?.pending?.amount || 0} 
-                        totalAmount={(dashboardStats?.orders?.totalAmount || 0) + (dashboardStats?.orders?.pending?.amount || 0)} 
+                        totalAmount={(dashboardStats?.orders?.totalAmount || 0) + (dashboardStats?.orders?.pending?.amount || 0)}
+                        isLoading={isLoadingDashboard}
                       />
                     </div>
                   </div>
@@ -962,7 +972,11 @@ function App() {
                       </button>
                     </div>
                     <div className="flex flex-col gap-3 flex-1">
-                      {orders.length > 0 ? (
+                      {isLoadingDashboard ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <OrderWidgetCardSkeleton key={i} />
+                        ))
+                      ) : orders.length > 0 ? (
                         orders.slice(0, 5).map((order) => (
                           <OrderWidgetCard key={order.id} order={order} />
                         ))
@@ -980,26 +994,42 @@ function App() {
                     </div>
                   </div>
                   <div className="xl:col-span-1">
-                    <OrderStatusChart stats={dashboardStats?.orders} />
+                    {/* ORDERSTATUSCHART CON SKELETON */}
+                    <OrderStatusChart
+                      stats={dashboardStats?.orders}
+                      isLoading={isLoadingDashboard}
+                    />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
                   <div className="xl:col-span-1 flex flex-col gap-4">
+                    {/* GALLERYWIDGET CON SKELETON */}
                     <GalleryWidget 
                       count={dashboardStats?.totalMedia || 0} 
-                      onViewGallery={() => navigateToGallery('list')} 
+                      onViewGallery={() => navigateToGallery('list')}
+                      isLoading={isLoadingDashboard}
                     />
-                    <CategoryWidget count={dashboardStats?.activeCategories || 0} />
+                    {/* CATEGORYWIDGET CON SKELETON */}
+                    <CategoryWidget
+                      count={dashboardStats?.activeCategories || 0}
+                      isLoading={isLoadingDashboard}
+                    />
                   </div>
                   <div className="xl:col-span-1">
+                    {/* LATESTMEDIA CON SKELETON */}
                     <LatestMedia 
                       items={dashboardStats?.latestMedia || []} 
-                      onViewGallery={() => navigateToGallery('list')} 
+                      onViewGallery={() => navigateToGallery('list')}
+                      isLoading={isLoadingDashboard}
                     />
                   </div>
                   <div className="xl:col-span-1">
-                    <LatestProducts items={dashboardStats?.latestProducts || []} />
+                    {/* LATESTPRODUCTS CON SKELETON */}
+                    <LatestProducts
+                      items={dashboardStats?.latestProducts || []}
+                      isLoading={isLoadingDashboard}
+                    />
                   </div>
                 </div>
               </div>

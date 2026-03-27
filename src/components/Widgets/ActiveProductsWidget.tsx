@@ -1,7 +1,30 @@
 import React from 'react';
 import { Package } from 'lucide-react';
 
-export const ActiveProductsWidget: React.FC<{ count: number }> = ({ count }) => {
+interface ActiveProductsWidgetProps {
+  count: number;
+  isLoading?: boolean;
+}
+
+const ActiveProductsWidgetSkeleton: React.FC = () => (
+  <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-between h-full animate-pulse">
+    {/* Fila superior: icono + badge */}
+    <div className="flex justify-between items-start">
+      <div className="w-12 h-12 rounded-2xl bg-stone-200" />
+      <div className="h-5 w-14 rounded-lg bg-stone-200" />
+    </div>
+    {/* N\u00famero grande + label */}
+    <div className="flex flex-col gap-2 mt-4">
+      <div className="h-8 w-16 bg-stone-200 rounded-full" />
+      <div className="h-2.5 w-28 bg-stone-100 rounded-full" />
+    </div>
+  </div>
+);
+
+export const ActiveProductsWidget: React.FC<ActiveProductsWidgetProps> = ({ count, isLoading = false }) => {
+
+  if (isLoading) return <ActiveProductsWidgetSkeleton />;
+
   return (
     <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-between hover:shadow-md transition-shadow group h-full">
       <div className="flex justify-between items-start">

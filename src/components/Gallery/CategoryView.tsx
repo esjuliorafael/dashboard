@@ -231,7 +231,7 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
           <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500 max-h-[92vh] sm:max-h-[85vh]">
             
             {/* Header: Fijo en la parte superior */}
-            <div className="px-8 pt-8 pb-6 border-b border-stone-100 shrink-0 bg-white z-10">
+            <div className="p-8 border-b border-stone-100 shrink-0 bg-white z-10">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">
@@ -359,7 +359,7 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
 
             {/* Footer: Botón "Nueva Subcategoría" fijo (solo en modo list) */}
             {managerView === 'list' && (
-              <div className="p-8 pt-4 pb-6 border-t border-stone-100 shrink-0 bg-white z-10">
+              <div className="p-8 border-t border-stone-100 shrink-0 bg-white z-10">
                 <button 
                   onClick={() => { setManagerView('form'); setEditingSub(null); setSubNameInput(''); }}
                   className="w-full py-4 bg-brand-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2"

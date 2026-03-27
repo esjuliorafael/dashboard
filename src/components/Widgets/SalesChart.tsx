@@ -4,44 +4,75 @@ import { TrendingUp } from 'lucide-react';
 
 interface SalesChartProps {
   data?: Record<string, number>;
+  isLoading?: boolean;
 }
 
-export const SalesChart: React.FC<SalesChartProps> = ({ data = {} }) => {
+// Alturas variables para simular un gráfico de barras real
+const SKELETON_BARS = [55, 80, 40, 90, 65, 75, 100];
+
+const SalesChartSkeleton: React.FC = () => (
+  <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200 flex flex-col justify-between h-full min-h-[320px] animate-pulse">
+    {/* Header: título + ícono */}
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <div className="h-5 w-32 bg-stone-200 rounded-full" />
+        <div className="h-3 w-20 bg-stone-100 rounded-full mt-2" />
+      </div>
+      <div className="w-10 h-10 bg-stone-100 rounded-2xl" />
+    </div>
+
+    {/* Monto grande */}
+    <div className="flex items-baseline gap-2 mb-6">
+      <div className="h-10 w-40 bg-stone-200 rounded-full" />
+      <div className="h-4 w-10 bg-stone-100 rounded-full" />
+    </div>
+
+    {/* Área del gráfico: 7 barras de alturas variables */}
+    <div className="flex-grow w-full min-h-[180px] flex items-end justify-between gap-2 pt-4">
+      {SKELETON_BARS.map((height, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-2">
+          <div
+            className="w-full rounded-t-md bg-stone-200"
+            style={{ height: `${height}%` }}
+          />
+          <div className="h-2.5 w-5 bg-stone-100 rounded-full" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export const SalesChart: React.FC<SalesChartProps> = ({ data = {}, isLoading = false }) => {
   const chartData = useMemo(() => {
     const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
     const today = new Date();
     const result = [];
 
-    // Recorremos los últimos 7 días (incluyendo hoy)
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      
-      // Formateamos la fecha a YYYY-MM-DD usando la zona horaria local
       const dateString = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      
       result.push({
         name: days[d.getDay()],
-        value: Number(data[dateString] || 0), // Casting a Number
+        value: Number(data[dateString] || 0),
         isToday: i === 0
       });
     }
     return result;
   }, [data]);
 
-  // Sumamos el total de los 7 días. Extraemos los valores como un arreglo de números
   const valuesArray: number[] = Object.values(data) as number[];
   const totalVentas: number = valuesArray.reduce((acc: number, val: number) => acc + val, 0);
 
+  if (isLoading) return <SalesChartSkeleton />;
+
   return (
-    // ESTÁNDAR: rounded-[2.5rem], border-stone-200
     <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-stone-200 flex flex-col justify-between h-full min-h-[320px]">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-stone-800 text-lg font-black tracking-tight">Ventas Totales</h3>
           <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">Últimos 7 días</p>
         </div>
-        {/* Icono: rounded-2xl */}
         <div className="p-2.5 bg-green-50 text-green-600 rounded-2xl border border-green-100">
           <TrendingUp size={20} />
         </div>

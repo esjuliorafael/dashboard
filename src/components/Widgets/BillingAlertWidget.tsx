@@ -5,10 +5,39 @@ import { AnnualService, ExtraCharge } from '../../types';
 interface BillingAlertWidgetProps {
   services: AnnualService[];
   charges: ExtraCharge[];
+  isLoading?: boolean;
   onNavigate: () => void;
 }
 
-export const BillingAlertWidget: React.FC<BillingAlertWidgetProps> = ({ services, charges, onNavigate }) => {
+const BillingAlertSkeleton = () => (
+  <div className="bg-stone-900 p-8 rounded-[2.5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
+    <div className="flex items-center gap-6">
+      {/* Skeleton del ícono */}
+      <div className="w-16 h-16 rounded-[1.5rem] bg-stone-700 animate-pulse shrink-0" />
+      <div className="flex flex-col gap-3">
+        {/* Skeleton del label "Saldo Total Pendiente" */}
+        <div className="h-3 w-44 bg-stone-700 rounded-full animate-pulse" />
+        {/* Skeleton del monto grande */}
+        <div className="h-10 w-52 bg-stone-700 rounded-full animate-pulse" />
+      </div>
+    </div>
+    {/* Skeleton de la caja "Próximo Vencimiento" + flecha */}
+    <div className="flex items-center gap-4 w-full sm:w-auto">
+      <div className="bg-stone-800 px-6 py-4 rounded-2xl flex flex-col gap-2 w-full sm:w-auto">
+        <div className="h-3 w-32 bg-stone-700 rounded-full animate-pulse" />
+        <div className="h-5 w-24 bg-stone-700 rounded-full animate-pulse mt-1" />
+      </div>
+      <div className="w-12 h-12 rounded-full bg-stone-800 animate-pulse shrink-0" />
+    </div>
+  </div>
+);
+
+export const BillingAlertWidget: React.FC<BillingAlertWidgetProps> = ({ services, charges, isLoading = false, onNavigate }) => {
+  // Mientras los datos cargan, mostramos el skeleton
+  if (isLoading) {
+    return <BillingAlertSkeleton />;
+  }
+
   const totalPendingFixed = services.filter(s => !s.isPaid).reduce((acc, curr) => acc + curr.amount, 0);
   const totalPendingExtra = charges.filter(c => c.status === 'pending').reduce((acc, curr) => acc + curr.amount, 0);
   const granTotalPending = totalPendingFixed + totalPendingExtra;
@@ -25,7 +54,7 @@ export const BillingAlertWidget: React.FC<BillingAlertWidgetProps> = ({ services
     return `${day}/${month}/${year}`;
   };
 
-  // Si no hay deuda pendiente, no mostramos absolutamente NADA (no es invasivo)
+  // Si cargó y no hay deuda pendiente, no mostramos nada
   if (granTotalPending === 0) {
     return null;
   }

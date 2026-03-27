@@ -1,7 +1,29 @@
 import React from 'react';
 import { Tags, ChevronRight } from 'lucide-react';
 
-export const CategoryWidget: React.FC<{ count: number }> = ({ count }) => {
+interface CategoryWidgetProps {
+  count: number;
+  isLoading?: boolean;
+}
+
+const CategoryWidgetSkeleton: React.FC = () => (
+  <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-center flex-1 h-full animate-pulse">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-stone-200 shrink-0" />
+        <div className="flex flex-col gap-2">
+          <div className="h-2.5 w-20 bg-stone-100 rounded-full" />
+          <div className="h-5 w-10 bg-stone-200 rounded-full" />
+        </div>
+      </div>
+      <div className="w-8 h-8 rounded-full bg-stone-100" />
+    </div>
+  </div>
+);
+
+export const CategoryWidget: React.FC<CategoryWidgetProps> = ({ count, isLoading = false }) => {
+  if (isLoading) return <CategoryWidgetSkeleton />;
+
   return (
     <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-center hover:shadow-md transition-shadow duration-200 flex-1 h-full">
       <div className="flex items-center justify-between">

@@ -4,9 +4,27 @@ import { Image as ImageIcon, ChevronRight } from 'lucide-react';
 interface GalleryWidgetProps {
   count: number;
   onViewGallery?: () => void;
+  isLoading?: boolean;
 }
 
-export const GalleryWidget: React.FC<GalleryWidgetProps> = ({ count, onViewGallery }) => {
+const GalleryWidgetSkeleton: React.FC = () => (
+  <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-center flex-1 h-full animate-pulse">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-stone-200 shrink-0" />
+        <div className="flex flex-col gap-2">
+          <div className="h-2.5 w-14 bg-stone-100 rounded-full" />
+          <div className="h-5 w-10 bg-stone-200 rounded-full" />
+        </div>
+      </div>
+      <div className="w-8 h-8 rounded-full bg-stone-100" />
+    </div>
+  </div>
+);
+
+export const GalleryWidget: React.FC<GalleryWidgetProps> = ({ count, onViewGallery, isLoading = false }) => {
+  if (isLoading) return <GalleryWidgetSkeleton />;
+
   return (
     <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-stone-200 flex flex-col justify-center hover:shadow-md transition-shadow duration-200 flex-1 h-full">
       <div className="flex items-center justify-between">
