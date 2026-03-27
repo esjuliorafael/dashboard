@@ -227,9 +227,11 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
             onClick={closeManager}
           />
           
-          <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500">
+          {/* Contenedor Principal: Altura controlada y estructura Flex */}
+          <div className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500 max-h-[92vh] sm:max-h-[85vh]">
             
-            <div className="px-8 pt-8 pb-6 border-b border-stone-100 shrink-0">
+            {/* Header: Fijo en la parte superior */}
+            <div className="px-8 pt-8 pb-6 border-b border-stone-100 shrink-0 bg-white z-10">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">
@@ -256,9 +258,13 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
               </div>
             </div>
 
-            {managerView === 'list' && (
-              <>
-                <div className="flex-1 overflow-y-auto p-8 space-y-3 no-scrollbar">
+            {/* Área desplazable: Lista o Formulario */}
+            <div 
+              className="flex-1 overflow-y-auto"
+              style={{ scrollbarGutter: 'stable' }}
+            >
+              {managerView === 'list' ? (
+                <div className="p-8 space-y-3">
                   {activeManagerCat.subcategorias && activeManagerCat.subcategorias.length > 0 ? (
                     activeManagerCat.subcategorias.map((sub, sidx) => (
                       <div 
@@ -292,7 +298,7 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
                       </div>
                     ))
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
                       <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center text-stone-200 mb-6 border border-stone-100/50">
                         <Layers size={32} />
                       </div>
@@ -301,21 +307,8 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
                     </div>
                   )}
                 </div>
-                
-                <div className="p-8 pt-0 shrink-0">
-                  <button 
-                    onClick={() => { setManagerView('form'); setEditingSub(null); setSubNameInput(''); }}
-                    className="w-full py-4 bg-brand-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    <Plus size={20} strokeWidth={3} />
-                    Nueva Subcategoría
-                  </button>
-                </div>
-              </>
-            )}
-
-            {managerView === 'form' && (
-              <div className="flex-1 overflow-y-auto p-8 animate-in fade-in slide-in-from-right-10 duration-500">
+              ) : (
+                <div className="p-8 animate-in fade-in slide-in-from-right-10 duration-500">
                 <form 
                   onSubmit={(e) => { e.preventDefault(); handleSaveSubcategory(); }}
                   className="space-y-6"
@@ -361,7 +354,22 @@ export const CategoryView: React.FC<CategoryViewProps> = ({ searchQuery, onEdit,
                   </div>
                 </form>
               </div>
+              )}
+            </div>
+
+            {/* Footer: Botón "Nueva Subcategoría" fijo (solo en modo list) */}
+            {managerView === 'list' && (
+              <div className="p-8 pt-4 pb-6 border-t border-stone-100 shrink-0 bg-white z-10">
+                <button 
+                  onClick={() => { setManagerView('form'); setEditingSub(null); setSubNameInput(''); }}
+                  className="w-full py-4 bg-brand-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Plus size={20} strokeWidth={3} />
+                  Nueva Subcategoría
+                </button>
+              </div>
             )}
+
           </div>
         </div>
       , document.body)}

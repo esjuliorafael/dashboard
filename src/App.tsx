@@ -12,6 +12,7 @@ import { GalleryWidget } from './components/Widgets/GalleryWidget';
 import { ActiveProductsWidget } from './components/Widgets/ActiveProductsWidget';
 import { PaidOrdersWidget } from './components/Widgets/PaidOrdersWidget';
 import { PendingOrdersWidget } from './components/Widgets/PendingOrdersWidget';
+import { BillingAlertWidget } from './components/Widgets/BillingAlertWidget';
 
 import { BottomNav } from './components/BottomNav';
 import { GalleryView } from './components/Gallery/GalleryView';
@@ -27,8 +28,8 @@ import { InventorySettingsView, InventorySettingsViewRef } from './components/Sy
 import { NotificationSettingsView, NotificationSettingsViewRef } from './components/System/Notifications/NotificationSettingsView';
 import { BillingView, BillingViewRef } from './components/System/Billing/BillingView';
 import { LoginView } from './components/Auth/LoginView'; 
-import { Order, DashboardStats } from './types';
-import { apiOrders, apiDashboard } from './api';
+import { Order, DashboardStats, AnnualService, ExtraCharge } from './types';
+import { apiOrders, apiDashboard, apiBilling } from './api';
 
 type SystemViewType = 'shipping' | 'config' | 'users' | 'identity' | 'payment' | 'whatsapp' | 'inventory' | 'notifications' | 'billing';
 
@@ -184,6 +185,8 @@ function App() {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [billingServices, setBillingServices] = useState<AnnualService[]>([]);
+  const [billingCharges, setBillingCharges] = useState<ExtraCharge[]>([]);
   
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ 
@@ -201,12 +204,15 @@ function App() {
     const fetchInitialData = async () => {
       setIsLoadingOrders(true);
       try {
-        const [ordersData, statsData] = await Promise.all([
+        const [ordersData, statsData, billingData] = await Promise.all([
           apiOrders.getAll(),
-          apiDashboard.getStats()
+          apiDashboard.getStats(),
+          apiBilling.getAll() // <-- NUEVA LLAMADA
         ]);
         setOrders(ordersData);
         setDashboardStats(statsData);
+        setBillingServices(billingData.services); // <-- GUARDAMOS DATOS
+        setBillingCharges(billingData.charges);   // <-- GUARDAMOS DATOS
       } catch (error) {
         console.error("Error cargando datos iniciales:", error);
         showToast("Error al conectar con la base de datos", "error");
@@ -909,6 +915,14 @@ function App() {
               </div>
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+                
+                {/* NUEVO WIDGET DE FACTURACIÓN */}
+                <BillingAlertWidget 
+                  services={billingServices} 
+                  charges={billingCharges} 
+                  onNavigate={() => navigateToSystem('billing')} 
+                />
+
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                   <div className="xl:col-span-2 min-h-[350px]">
                     <SalesChart data={dashboardStats?.sales7Days} />

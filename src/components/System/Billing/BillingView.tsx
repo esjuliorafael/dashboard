@@ -142,16 +142,17 @@ interface ServiceCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleStatus: () => void;
+  isSuperadmin: boolean;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, onToggleStatus }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, onToggleStatus, isSuperadmin }) => {
+  const CardWrapper: any = isSuperadmin ? SwipeableCard : 'div';
+  const wrapperProps = isSuperadmin 
+    ? { onEdit, onDelete, className: `rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${service.isPaid ? 'bg-stone-50 border-stone-200' : 'bg-white border-brand-200'}` } 
+    : { className: `rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${service.isPaid ? 'bg-stone-50 border-stone-200' : 'bg-white border-brand-200'}` };
+
   return (
-    <SwipeableCard 
-      onEdit={onEdit} 
-      onDelete={onDelete}
-      // ESTÁNDAR: rounded-[2.5rem], border-stone-200
-      className={`rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${service.isPaid ? 'bg-stone-50 border-stone-200' : 'bg-white border-brand-200'}`}
-    >
+    <CardWrapper {...wrapperProps}>
       <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 h-full">
         <div className="flex-1">
           <div className="flex items-center gap-4">
@@ -181,22 +182,24 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, on
             <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Renovación</p>
             <p className={`text-xl font-black ${service.isPaid ? 'text-stone-400' : 'text-stone-800'}`}>${service.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
-              // ESTÁNDAR: rounded-2xl
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-            >
-              {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
-            </button>
-            <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
+          {isSuperadmin && (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
+                // ESTÁNDAR: rounded-2xl
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${service.isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              >
+                {service.isPaid ? 'Pagado' : 'Marcar Pagado'}
+              </button>
+              <div className="hidden sm:flex gap-2">
+                <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
+                <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </SwipeableCard>
+    </CardWrapper>
   );
 };
 
@@ -206,16 +209,17 @@ interface ChargeCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleStatus: () => void;
+  isSuperadmin: boolean;
 }
 
-const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onToggleStatus }) => {
+const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onToggleStatus, isSuperadmin }) => {
+  const CardWrapper: any = isSuperadmin ? SwipeableCard : 'div';
+  const wrapperProps = isSuperadmin 
+    ? { onEdit, onDelete, className: `rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${charge.status === 'paid' ? 'bg-stone-50 border-stone-200' : 'bg-white border-stone-200'}` } 
+    : { className: `rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${charge.status === 'paid' ? 'bg-stone-50 border-stone-200' : 'bg-white border-stone-200'}` };
+
   return (
-    <SwipeableCard 
-      onEdit={onEdit} 
-      onDelete={onDelete}
-      // ESTÁNDAR: rounded-[2.5rem], border-stone-200
-      className={`rounded-[2.5rem] border transition-all duration-300 shadow-sm hover:shadow-md ${charge.status === 'paid' ? 'bg-stone-50 border-stone-200' : 'bg-white border-stone-200'}`}
-    >
+    <CardWrapper {...wrapperProps}>
       <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 h-full">
         <div className="flex items-center gap-4 flex-1">
           {/* Icono: rounded-2xl */}
@@ -234,22 +238,24 @@ const ChargeCard: React.FC<ChargeCardProps> = ({ charge, onEdit, onDelete, onTog
           </p>
           {/* Divisor: border-stone-200 */}
           <div className="w-px h-8 bg-stone-200 mx-2 hidden md:block"></div>
-          <div className="flex items-center gap-2 ml-auto md:ml-0">
-            <button 
-              onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
-              // ESTÁNDAR: rounded-2xl
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-            >
-              {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
-            </button>
-            <div className="hidden sm:flex gap-2">
-              <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
-              <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
+          {isSuperadmin && (
+            <div className="flex items-center gap-2 ml-auto md:ml-0">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onToggleStatus(); }}
+                // ESTÁNDAR: rounded-2xl
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border active:scale-95 ${charge.status === 'paid' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+              >
+                {charge.status === 'paid' ? 'Pagado' : 'Marcar Pagado'}
+              </button>
+              <div className="hidden sm:flex gap-2">
+                <button onClick={onEdit} className="p-2 text-stone-300 hover:text-brand-500 hover:bg-brand-50 rounded-2xl transition-all active:scale-95"><Pencil size={18} /></button>
+                <button onClick={onDelete} className="p-2 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95"><Trash2 size={18} /></button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </SwipeableCard>
+    </CardWrapper>
   );
 };
 
@@ -268,6 +274,13 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<AnnualService | null>(null);
     const [serviceFormData, setServiceFormData] = useState({ concept: '', description: '', amount: '', contractDate: '', dueDate: '', iconType: 'default' });
+
+    const [userRole, setUserRole] = useState<string>(() => {
+      const authString = localStorage.getItem('admin_session');
+      if (!authString) return 'staff';
+      try { return JSON.parse(authString).role || 'staff'; } catch { return 'staff'; }
+    });
+    const isSuperadmin = userRole === 'superadmin';
 
     // CARGAR DATOS
     const loadBillingData = async () => {
@@ -519,14 +532,16 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
               </div>
             </div>
 
-            <button 
-              onClick={() => handleOpenServiceModal()}
-              // ESTÁNDAR: rounded-2xl, border-stone-200
-              className="flex items-center justify-center gap-2 bg-stone-50 text-stone-600 px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95"
-            >
-              <Plus size={16} />
-              Añadir Servicio
-            </button>
+            {isSuperadmin && (
+              <button 
+                onClick={() => handleOpenServiceModal()}
+                // ESTÁNDAR: rounded-2xl, border-stone-200
+                className="flex items-center justify-center gap-2 bg-stone-50 text-stone-600 px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-100 border border-stone-200 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                Añadir Servicio
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-4">
@@ -537,6 +552,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                 onEdit={() => handleOpenServiceModal(service)}
                 onDelete={() => removeService(service.id)}
                 onToggleStatus={() => toggleServiceStatus(service.id)}
+                isSuperadmin={isSuperadmin}
               />
             ))}
           </div>
@@ -555,13 +571,15 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
               </div>
             </div>
 
-            <button 
-              onClick={() => handleOpenChargeModal()}
-              className="flex items-center justify-center gap-2 bg-stone-900 text-white px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-800 transition-all active:scale-95"
-            >
-              <Plus size={16} />
-              Añadir Cargo
-            </button>
+            {isSuperadmin && (
+              <button 
+                onClick={() => handleOpenChargeModal()}
+                className="flex items-center justify-center gap-2 bg-stone-900 text-white px-5 py-3 rounded-2xl text-xs font-bold hover:bg-stone-800 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                Añadir Cargo
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-4">
@@ -577,6 +595,7 @@ export const BillingView = forwardRef<BillingViewRef, BillingViewProps>(
                   onEdit={() => handleOpenChargeModal(charge)}
                   onDelete={() => removeCharge(charge.id)}
                   onToggleStatus={() => toggleChargeStatus(charge.id)}
+                  isSuperadmin={isSuperadmin}
                 />
               ))
             )}
